@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ ticker }} Stock Details{% endblock %}
+  {% block morestyle %}
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1/dist/chart.umd.min.js"></script>
+  <!-- Moment.js (required for chartjs-adapter-moment) -->
+  <script src="https://cdn.jsdelivr.net/npm/moment@2.29.2/moment.min.js"></script>
+  <!-- Chart.js adapter for Moment.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
+
+  <style>
+    .chart-container {
+      width: 50%;
+      margin: 0 auto;
+      max-width: 800px;
+    }
+    .chart-container canvas {
+      width: 100% !important;
+      height: auto !important;
+    }
+
+    /* Button row styling */
+    .range-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+    .range-buttons button {
+      padding: 6px 12px;
+      cursor: pointer;
+      border: none;
+      background-color: #eee;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .range-buttons button.active {
+      background-color: #444;
+      color: #fff;
+    }
+
+    /* Price change text */
+    #priceChange {
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+  </style>
+{% endblock %}
+{% block content %}
+  <!-- Display Stock Info -->
+  <h1>{{ name }} ({{ ticker }})</h1>
+  <p><strong>Sector:</strong> {{ sector }}</p>
+  <p><strong>P/E Ratio:</strong> {{ pe_ratio }}</p>
+  <p><strong>Market Cap:</strong> {{ market_cap }}</p>
+  <p><strong>Summary:</strong> {{ summary }}</p>
+  
+  <!-- Buttons for time ranges (instead of a dropdown) -->
+  <div class="range-buttons">
+    <button data-range="1w" class="active">1W</button>
+    <button data-range="1m">1M</button>
+    <button data-range="3m">3M</button>
+    <button data-range="6m">6M</button>
+    <button data-range="1y">1Y</button>
+    <button data-range="2y">2Y</button>
+    <button data-range="5y">5Y</button>
+  </div>
+
+  <!-- Paragraph to show how much the stock is up/down over the selected interval -->
+  <p id="priceChange"></p>
+
+  <!-- Chart Container: centered and responsive -->
+  <div class="chart-container">
+    <canvas id="myChart"></canvas>
+  </div>
+  
+  <!-- News Articles Section -->
+  <h2>Latest News</h2>
+  {% if articles %}
+    <ul>
+      {% for article in articles %}
+        <li>
+          <a href="{{ article.url }}" target="_blank">{{ article.title }}</a>
+          <p>{{ article.description }}</p>
+          <small>{{ article.publishedAt }}</small>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No news available.</p>
+  {% endif %}
+  
+  <script>
+    // Parse the JSON string from Django into a JS object
+    const fullData = JSON.parse('{{ chart_data_json|escapejs }}');
+    console.log("Full chart data:", fullData);
+
+    // Simple function to create a hue between red (0) and green (120)
+    // based on the percentage change (capped at ±10%).
+    function getGradientColor(diffPct) {
+      const clamped = Math.max(-10, Math.min(10, diffPct));
+      const hue = 120 * (clamped + 10) / 20;
+      return `hsl(${hue}, 100%, 50%)`;
+    }
+
+    let chart;
+
+    // Filter data based on the selected time range
+    function filterData(range) {
+      if (range === "all") return fullData;
+      const now = new Date();
+      let days;
+      switch(range) {
+        case "1w": days = 7; break;
+        case "1m": days = 30; break;
+        case "3m": days = 90; break;
+        case "6m": days = 180; break;
+        case "1y": days = 365; break;
+        case "2y": days = 730; break;
+        case "5y": days = 1825; break;
+        default: return fullData;
+      }
+      const fromDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+      return fullData.filter(row => new Date(row.date) >= fromDate);
+    }
+
+    // Update the chart, line color, and price change text
+    function updateChart(range) {
+      const filtered = filterData(range);
+      if (filtered.length === 0) {
+        chart.data.labels = [];
+        chart.data.datasets[0].data = [];
+        chart.data.datasets[0].borderColor = '#000';
+        chart.update();
+        document.getElementById('priceChange').textContent = "No data for this range.";
+        return;
+      }
+
+      const labels = filtered.map(row => row.date);
+      const closePrices = filtered.map(row => row.close_price);
+
+      const firstPrice = closePrices[0];
+      const lastPrice = closePrices[closePrices.length - 1];
+      const diff = lastPrice - firstPrice;
+      const diffPct = (diff / firstPrice) * 100;
+
+      // Set color based on magnitude of the difference
+      const lineColor = getGradientColor(diffPct);
+
+      // Update chart data
+      chart.data.labels = labels;
+      chart.data.datasets[0].data = closePrices;
+      chart.data.datasets[0].borderColor = lineColor;
+      chart.update();
+
+      // Display the percentage change
+      const priceChangeEl = document.getElementById('priceChange');
+      if (diff > 0) {
+        priceChangeEl.textContent = `Up ${diffPct.toFixed(2)}% over this interval.`;
+        priceChangeEl.style.color = 'green';
+      } else if (diff < 0) {
+        priceChangeEl.textContent = `Down ${Math.abs(diffPct).toFixed(2)}% over this interval.`;
+        priceChangeEl.style.color = 'red';
+      } else {
+        priceChangeEl.textContent = `No change (0.00%) over this interval.`;
+        priceChangeEl.style.color = 'black';
+      }
+    }
+
+    // Highlight the active button
+    function setActiveButton(range) {
+      const buttons = document.querySelectorAll('.range-buttons button');
+      buttons.forEach(btn => {
+        if (btn.dataset.range === range) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    window.onload = function() {
+      // Initialize Chart.js
+      const ctx = document.getElementById('myChart').getContext('2d');
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: fullData.map(row => row.date),
+          datasets: [
+            {
+              label: 'Close Price',
+              data: fullData.map(row => row.close_price),
+              borderColor: 'rgba(255, 99, 132, 1)', // default
+              fill: false,
+              tension: 0.1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              type: 'time',
+              time: {
+                unit: 'day'
+              },
+              title: {
+                display: true,
+                text: 'Date'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'Price'
+              }
+            }
+          }
+        }
+      });
+
+      // Set default range to 1 week
+      updateChart('1w');
+      setActiveButton('1w');
+
+      // Attach click event to each button
+      const buttons = document.querySelectorAll('.range-buttons button');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const range = btn.dataset.range;
+          updateChart(range);
+          setActiveButton(range);
+        });
+      });
+    };
+  </script>
+{% endblock %}

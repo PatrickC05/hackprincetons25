@@ -16,6 +16,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/team/'  # Redirects to the team page after login
 
 
 # Quick-start development settings - unsuitable for production

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Leaderboard - Fantasy Stocks{% endblock %}
+
+{% block content %}
+<h2>Leaderboard</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Team Name</th>
+            <th>Wins</th>
+            <th>Losses</th>
+            <th>Total Points</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user_profile in user_profiles %}
+            <tr class="{% if forloop.first %}gold{% elif forloop.counter == 2 %}silver{% elif forloop.counter == 3 %}bronze{% endif %}">
+                <td>{{ forloop.counter }}</td>
+                <td>{{ user_profile.team_name }}</td>
+                <td>{{ user_profile.win_count }}</td>
+                <td>{{ user_profile.loss_count }}</td>
+                <td>{{ user_profile.total_points }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Confetti animation -->
+<canvas id="confetti-canvas"></canvas>
+<script src="{% static 'js/confetti.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        startConfetti();
+    });
+</script>
+
+{% endblock %}

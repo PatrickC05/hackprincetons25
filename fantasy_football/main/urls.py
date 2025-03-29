@@ -15,11 +15,22 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from django.contrib.auth.views import LoginView
-from .views import home, team
+from django.shortcuts import redirect
+from django.contrib.auth import logout
+from django.contrib.auth.views import LoginView, LogoutView
+from .views import home, team, matchup, stock_detail, leaderboard
+
+def custom_logout(request):
+    logout(request)
+    return redirect('home')  # Redirects to home page
+
 
 urlpatterns = [
    path('', home, name='home'),
    path('team/', team, name='team'),
-   path('login/', LoginView.as_view(template_name='login.html'), name='login')
+   path('login/', LoginView.as_view(template_name='login.html'), name='login'),
+   path('matchup/', matchup, name='matchup'),
+   path('stocks/<str:ticker>/', stock_detail, name='stock_detail'),
+   path('logout/', custom_logout, name='logout'),
+   path('leaderboard/', leaderboard, name='leaderboard'),
 ]

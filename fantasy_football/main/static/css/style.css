@@ -1,3 +1,52 @@
+#floating-money {
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100vw; 
+    height: 100vh; 
+    pointer-events: none;
+    z-index: 999; 
+}
+
+.money {
+    position: absolute;
+    font-size: 2rem; 
+    color: green;
+    pointer-events: none;
+    opacity: 0.8; 
+    transform: translate(-50%, -50%); 
+}
+
+/* Optional: Add some animation to make it feel more "bouncy" 
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-30px); 
+    }
+}
+*/
+
+tr.gold { background-color: #FFD700 !important; }   /* Light Gold */
+tr.silver { background-color: #C0C0C0 !important; } /* Silver */
+tr.bronze { background-color: #CD7F32 !important; } /* Bronze */
+
+/* table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid black;
+}
+
+th {
+    background-color: #FFFFF;
+}
+
 body {
     font-family: Cursive;
     background-color: #f4f4f4;
@@ -38,25 +87,6 @@ h2 {
     border-radius: 5px;
 }
 
-table {
-    margin-left: auto;
-    margin-right: auto;
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-}
-
-th, td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: center;
-}
-
-th {
-    background-color: #007bff;
-    color: white;
-}
-
 footer {
     background-color: #333;
     color: white;
@@ -65,4 +95,87 @@ footer {
     position: fixed;
     bottom: 0;
     width: 100%;
+}
+
+.matchup-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 20px;
+}
+
+.team {
+    width: 45%;  /* Adjust width as needed */
+/* }
+
+.vs-text {
+    align-self: center;
+    font-size: 2rem;
+    font-weight: bold;
+} */ 
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* Body */
+body {
+    background-color: #0C1821;
+    color: #CCC9DC;
+    padding: 20px;
+    font-size: 16px;
+}
+
+/* Container */
+.container {
+    width: 80%;
+    margin: 0 auto;
+    background-color: #1B2A41;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #324A5F;
+}
+
+th {
+    background-color: #324A5F;
+    color: #CCC9DC;
+}
+
+tr:hover {
+    background-color: #1B2A41;
+}
+
+td {
+    color: #CCC9DC;
+}
+
+/* Header */
+h2 {
+    color: #CCC9DC;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Empty state message */
+td[colspan="4"] {
+    text-align: center;
+    font-style: italic;
+    color: #CCC9DC;
 }
