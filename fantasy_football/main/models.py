@@ -5,18 +5,18 @@ from django.contrib.auth.models import User
 
 class StockHistorical(models.Model):
     date = models.DateField()
-    stock = models.ForeignKey('Stock', on_delete=models.CASCADE, sorted=True)
+    stock = models.ForeignKey('Stock', on_delete=models.CASCADE, related_name='historical_prices')
     open_price = models.DecimalField(max_digits=10, decimal_places=2)
     close_price = models.DecimalField(max_digits=10, decimal_places=2)
 
-    class Meta:
-        unique_together = ('date', 'open', 'close')
+    def __str__(self):
+        return f"{self.stock.ticker} - {self.date.strftime('%Y-%m-%d')}"
 
 class Stock(models.Model):
     ticker = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    pe = models.DecimalField(max_digits=10, decimal_places=2)
+    pe = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     market_cap = models.DecimalField(max_digits=20, decimal_places=2)
     sector = models.CharField(max_length=20)
 
@@ -27,17 +27,20 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     email_address = models.CharField(max_length=30)
     team_name = models.CharField(max_length=30)
-    user_stocks = models.ManyToManyField('Stock', related_name="users")
+    user_stocks = models.ManyToManyField('Stock', related_name="users", blank=True)
+    league = models.ForeignKey('League', related_name="users", on_delete=models.CASCADE, null=True, blank=True)
 
 class League(models.Model):
-    weeks = models.IntegerField(max_digits=3)
-    current_week = models.IntegerField(max_digits=3)
+    weeks = models.IntegerField()
+    current_week = models.IntegerField()
+    name = models.CharField(max_length=30)
+    start = models.DateField()
 
 class Matchup(models.Model):
-    league = models.ForeignKey('League', on_delete=models.CASCADE)
-    week = models.IntegerField(max_digits=3)
-    first_user = models.ForeignKey('UserProfile', related_name="matchups")
-    second_user = models.ForeignKey('UserProfile', related_name="matchups")
+    league = models.ForeignKey('League', on_delete=models.CASCADE, related_name="matchups")
+    week = models.IntegerField()
+    first_user = models.ForeignKey('UserProfile', related_name="matchups_1", on_delete=models.CASCADE)
+    second_user = models.ForeignKey('UserProfile', related_name="matchups_2", on_delete=models.CASCADE)
     # 0 not finished, 1 first user won, 2 second user won, 3 tie
-    winner = models.IntegerField(max_digits=1, default=0)
+    winner = models.IntegerField(default=0)
 

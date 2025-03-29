@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}User Portfolio{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h2>{{ user_profile.team_name }}</h2>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sector</th>
+                        <th>Name</th>
+                        <th>Ticker</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stock in user_profile.user_stocks.items %}
+                    <tr>
+                        <td>{{ stock.sector }}</td>
+                        <td>{{ stock.name }}</td>
+                        <td>({{ stock.ticker }})</td>
+                        <td>${{ stock.price }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No stocks chosen by this team</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

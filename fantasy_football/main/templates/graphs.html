@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dynamic Stock Chart</title>
+  <!-- Chart.js from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Papa Parse from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+</head>
+<body>
+  <!-- Dropdown to select time range -->
+  <select id="timeRange">
+    <option value="all">All</option>
+    <option value="1d">1 Day</option>
+    <option value="1w">1 Week</option>
+    <option value="1m">1 Month</option>
+    <option value="3m">3 Months</option>
+    <option value="6m">6 Months</option>
+    <option value="1y">1 Year</option>
+    <option value="2y">2 Years</option>
+    <option value="5y">5 Years</option>
+  </select>
+
+  <canvas id="myChart" width="800" height="600"></canvas>
+
+  <script>
+    let fullData = [];  // This will store the full dataset from the CSV
+    let chart;          // Chart.js instance
+
+    // Function to filter data based on selected range
+    function filterData(range) {
+      if (range === "all") return fullData;
+      const now = new Date();
+      let days;
+      switch(range) {
+        case "1d":
+          days = 1;
+          break;
+        case "1w":
+          days = 7;
+          break;
+        case "1m":
+          days = 30;
+          break;
+        case "3m":
+          days = 90;
+          break;
+        case "6m":
+          days = 180;
+          break;
+        case "1y":
+          days = 365;
+          break;
+        case "2y":
+          days = 730;
+          break;
+        case "5y":
+          days = 1825;
+          break;
+        default:
+          return fullData;
+      }
+      const fromDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+      return fullData.filter(row => new Date(row.Date) >= fromDate);
+    }
+
+    // Function to update the chart with new filtered data
+    function updateChart(range) {
+      const filtered = filterData(range);
+      const labels = filtered.map(row => row.Date);
+      const prices = filtered.map(row => parseFloat(row.AAPL));
+      
+      chart.data.labels = labels;
+      chart.data.datasets[0].data = prices;
+      chart.update();
+    }
+
+    // Load CSV data using Papa Parse
+    Papa.parse('opening_prices.csv', {
+      download: true,
+      header: true,
+      complete: function(results) {
+        // Assuming the CSV has columns "Date" and "AAPL"
+        fullData = results.data.filter(row => row.Date && row.AAPL);
+        
+        // Initialize the chart with the full dataset
+        const ctx = document.getElementById('myChart').getContext('2d');
+        chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: fullData.map(row => row.Date),
+            datasets: [{
+              label: 'AAPL Opening Prices',
+              data: fullData.map(row => parseFloat(row.AAPL)),
+              borderColor: 'rgba(75,192,192,1)',
+              fill: false,
+              tension: 0.1
+            }]
+          },
+          options: {
+            scales: {
+              x: {
+                type: 'time',
+                time: {
+                  unit: 'day'
+                },
+                title: {
+                  display: true,
+                  text: 'Date'
+                }
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: 'Price'
+                }
+              }
+            }
+          }
+        });
+      },
+      error: function(err) {
+        console.error('Error loading CSV:', err);
+      }
+    });
+
+    // Listen for dropdown changes to update the chart dynamically
+    document.getElementById('timeRange').addEventListener('change', function(e) {
+      updateChart(e.target.value);
+    });
+  </script>
+</body>
+</html>
