@@ -12,6 +12,15 @@ class StockHistorical(models.Model):
     def __str__(self):
         return f"{self.stock.ticker} - {self.date.strftime('%Y-%m-%d')}"
 
+class StockLeague(models.Model):
+    stock = models.ForeignKey('Stock', on_delete=models.CASCADE)
+    league = models.ForeignKey('League', on_delete=models.CASCADE, related_name='stocks')
+    week = models.IntegerField()
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.stock.ticker} in {self.league.name} for week {self.week}"
+    
 class Stock(models.Model):
     ticker = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=100)
@@ -27,7 +36,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     email_address = models.CharField(max_length=30)
     team_name = models.CharField(max_length=30)
-    user_stocks = models.ManyToManyField('Stock', related_name="users", blank=True)
+    user_stocks = models.ManyToManyField('StockLeague', related_name="users", blank=True)
     active_stocks = models.ManyToManyField('Stock', related_name="users", blank=True)
     league = models.ForeignKey('League', related_name="users", on_delete=models.CASCADE, null=True, blank=True)
 
