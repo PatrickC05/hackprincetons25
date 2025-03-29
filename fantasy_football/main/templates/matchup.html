@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Matchup{% endblock %}
+
+{% block content %}
+    <div>
+        <h2>{{team1name}}</h2>
+        <p>Score: <span id="team1score">{{team1score}}</span></p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sector</th>
+                    <th>Name</th>
+                    <th>Ticker</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stock in first_user_sectors %}
+                <tr>
+                    <td>{{ stock.sector }}</td>
+                    <td>{{ stock.name }}</td>
+                    <td>({{ stock.ticker }})</td>
+                    <td>${{ stock.points }}</td>
+                </tr>
+                {% endfor %}
+                {% for stock in first_user_flex %}
+                <tr>
+                    <td>{{ FLEX }}</td>
+                    <td>{{ stock.name }}</td>
+                    <td>({{ stock.ticker }})</td>
+                    <td>${{ stock.points }}</td>
+                </tr>
+                {% endfor %}
+                {% for stock in first_user_bench %}
+                <tr>
+                    <td>{{ FLEX }}</td>
+                    <td>{{ stock.name }}</td>
+                    <td>({{ stock.ticker }})</td>
+                    <td>${{ stock.points }}</td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+    <p>VS</p>
+
+    <div>
+        <h2>{{team2name}}</h2>
+        <p>Score: <span id="team2score">{{team2score}}</span></p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sector</th>
+                    <th>Name</th>
+                    <th>Ticker</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stock in second_user_sectors %}
+                <tr>
+                    <td>{{ stock.sector }}</td>
+                    <td>{{ stock.name }}</td>
+                    <td>({{ stock.ticker }})</td>
+                    <td>${{ stock.points }}</td>
+                </tr>
+                {% endfor %}
+                {% for stock in second_user_flex %}
+                <tr>
+                    <td>{{ FLEX }}</td>
+                    <td>{{ stock.name }}</td>
+                    <td>({{ stock.ticker }})</td>
+                    <td>${{ stock.points }}</td>
+                </tr>
+                {% endfor %}
+                {% for stock in second_user_bench %}
+                <tr>
+                    <td>{{ FLEX }}</td>
+                    <td>{{ stock.name }}</td>
+                    <td>({{ stock.ticker }})</td>
+                    <td>${{ stock.points }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>

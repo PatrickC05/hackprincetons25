@@ -29,4 +29,56 @@ def matchup(request):
             opponent = matchup.second_user
         elif user_profile.team_name == matchup.second_user.team_name:
             opponent = matchup.first_user
-    return render(request, 'matchup.html', {'user': user_profile, 'opponent': opponent})
+    sectors = ['IT', 'FIN', 'HC', 'IND', 'ESS', 'DES', 'ENE', 'MAT']
+    sector_count = 0
+    first_user_sectors = []
+    first_user_flex = []
+    first_user_bench = []
+    for stock in user_profile.active_stocks:
+        if stock.sector in sectors and sector_count < 6:
+            sector_count += 1
+            first_user_sectors.append(stock)
+        else:
+            first_user_flex.append(stock)
+
+    for stock in user_profile.user_stocks:
+        if stock not in user_profile.active_stocks:
+            first_user_bench.append(stock)
+    sector_count = 0
+    second_user_sectors = []
+    second_user_flex = []
+    second_user_bench = []
+    for stock in user_profile.active_stocks:
+        if stock.sector in sectors and sector_count < 6:
+            sector_count += 1
+            second_user_sectors.append(stock)
+        else:
+            second_user_flex.append(stock)
+
+    for stock in user_profile.user_stocks:
+        if stock not in user_profile.active_stocks:
+            second_user_bench.append(stock)
+
+    # TODO: add points to stock somehow?
+    first_user_score = 0
+    for stock in first_user_sectors:
+        first_user_score += stock.score
+    for stock in first_user_flex:
+        first_user_score += stock.score
+
+    second_user_score = 0
+    for stock in second_user_sectors:
+        second_user_score += stock.score
+    for stock in second_user_flex:
+        second_user_score += stock.score
+
+    return render(request, 'matchup.html', {'team1name': user_profile.team_name, 
+                                            'team2name': opponent.team_name, 
+                                            'first_user_score': first_user_score,
+                                            'second_user_score': second_user_score,
+                                            'first_user_sectors': first_user_sectors,
+                                            'first_user_flex': first_user_flex,
+                                            'first_user_bench': first_user_bench,
+                                            'second_user_sectors': first_user_sectors,
+                                            'second_user_flex': first_user_flex,
+                                            'second_user_bench': second_user_bench,})

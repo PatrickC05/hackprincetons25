@@ -28,6 +28,7 @@ class UserProfile(models.Model):
     email_address = models.CharField(max_length=30)
     team_name = models.CharField(max_length=30)
     user_stocks = models.ManyToManyField('Stock', related_name="users", blank=True)
+    active_stocks = models.ManyToManyField('Stock', related_name="users", blank=True)
     league = models.ForeignKey('League', related_name="users", on_delete=models.CASCADE, null=True, blank=True)
 
 class League(models.Model):
