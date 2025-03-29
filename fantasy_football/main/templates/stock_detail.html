@@ -11,7 +11,7 @@
 
   <style>
     .chart-container {
-      width: 50%;
+      width: 70%;
       margin: 0 auto;
       max-width: 800px;
     }
@@ -26,19 +26,23 @@
       gap: 10px;
       justify-content: center;
       margin-bottom: 10px;
+      position: relative;
+      z-index: 999;
     }
     .range-buttons button {
       padding: 6px 12px;
       cursor: pointer;
       border: none;
-      background-color: #eee;
+      background-color: #eee; /* Light gray background */
+      color: #333;            /* Dark gray text for visibility */
       border-radius: 4px;
       font-weight: 500;
-    }
+      transition: background-color 0.3s ease, color 0.3s ease;
+  }
     .range-buttons button.active {
-      background-color: #444;
-      color: #fff;
-    }
+      background-color: #444; /* Dark background */
+      color: #fff;            /* White text */
+  }
 
     /* Price change text */
     #priceChange {

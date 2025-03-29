@@ -32,6 +32,18 @@ def team(request):
     return render(request, 'team.html', {'user_profile': user_profile, 'user_stocks': user_stocks,
                                          'sector_abbs': sector_abbs})
 
+def team_view(request, user_id):
+    user_profile = get_object_or_404(UserProfile, user__id=user_id)
+    if not user_profile.league:
+        return HttpResponse("This user is not part of any league.")
+    sector_abbs = {'Communication Services': 'COM', 'Consumer Discretionary': 'DIS', 
+                   'Consumer Staples': 'STP', 'Energy': 'ENE', 'Financials': 'FIN',
+                   'Health Care': 'HC', 'Industrials': 'IND', 'Information Technology': "IT",
+                   'Materials': 'MAT', 'Real Estate': 'RE', 'Utilities': 'UT'}
+    user_stocks = Stock.objects.filter(stockleague__users=user_profile).distinct()
+    return render(request, 'team.html', {'user_profile': user_profile, 'user_stocks': user_stocks,
+                                         'sector_abbs': sector_abbs})
+
 def matchup(request):
     stock_scores = {}
     sector_abbs = {'Communication Services': 'COM', 'Consumer Discretionary': 'DIS', 
@@ -79,35 +91,37 @@ def matchup(request):
     monday = recent_monday()
     first_user_score = 0
     for stock in first_user_sectors:
-        score = stock.get_score(monday)
-        stock_scores[stock] = score
+        score = round(stock.get_score(monday), 2)
+        stock_scores[stock.ticker] = score
         first_user_score += score
         print('firstuserscore',first_user_score)
     for stock in first_user_flex:
-        score = stock.get_score(monday)
-        stock_scores[stock] = score
+        score = round(stock.get_score(monday), 2)
+        stock_scores[stock.ticker] = score
         first_user_score += score
 
     second_user_score = 0
     for stock in second_user_sectors:
-        score = stock.get_score(monday)
-        stock_scores[stock] = score
+        score = round(stock.get_score(monday), 2)
+        stock_scores[stock.ticker] = score
         second_user_score += score
         
     for stock in second_user_flex:
-        score = stock.get_score(monday)
-        stock_scores[stock] = score
+        score = round(stock.get_score(monday), 2)
+        stock_scores[stock.ticker] = score
         second_user_score += score
 
     return render(request, 'matchup.html', {'team1name': user_profile.team_name, 
+                                            'team1id': user_profile.id,
                                             'team2name': opponent.team_name, 
+                                            'team2id': opponent.id,
                                             'team1score': first_user_score,
                                             'team2score': second_user_score,
                                             'first_user_sectors': first_user_sectors,
                                             'first_user_flex': first_user_flex,
                                             'first_user_bench': first_user_bench,
-                                            'second_user_sectors': first_user_sectors,
-                                            'second_user_flex': first_user_flex,
+                                            'second_user_sectors': second_user_sectors,
+                                            'second_user_flex': second_user_flex,
                                             'second_user_bench': second_user_bench,
                                             'sector_abbs': sector_abbs,
                                             'stock_scores': stock_scores})

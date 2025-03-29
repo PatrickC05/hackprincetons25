@@ -1,16 +1,16 @@
-import os
 import time
 import csv
 import json
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
+from google import genai
+import os
 from dotenv import load_dotenv
 
 # Load environment variables from .env
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_KEY")
-GEMINI_API = os.getenv("GEMINI_API")  # e.g., "https://api.gemini.com/v1/summarize"
 
 def get_sp500_companies():
     url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
@@ -19,7 +19,7 @@ def get_sp500_companies():
     soup = BeautifulSoup(response.text, 'html.parser')
     table = soup.find("table", {"id": "constituents"})
     companies = []
-    for row in table.tbody.find_all("tr")[1:]:  # skip header
+    for row in table.tbody.find_all("tr")[1:]:
         cells = row.find_all("td")
         if len(cells) < 2:
             continue
@@ -57,22 +57,54 @@ def get_company_domain(wiki_url):
         print(f"Error retrieving domain from {wiki_url}: {e}")
     return None
 
-def get_summary_from_gemini(ticker, name, domain):
-    prompt = f"Provide a concise summary for the company {name} (ticker: {ticker}). Official website: {domain if domain else 'N/A'}."
-    headers = {
-        "Authorization": f"Bearer {GEMINI_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "prompt": prompt,
-        "max_tokens": 150
-    }
-    try:
-        response = requests.post(GEMINI_API, json=payload, headers=headers)
-        response.raise_for_status()
-        data = response.json()
-        summary = data.get("summary", "No summary returned.")
-        return summary
-    except Exception as e:
-        print(f"Error summarizing {ticker}: {e}")
-        return "Error
+def get_summary_from_gemini(ticker, name):
+    prompt = f"Give me a summary of {name}(${ticker}), what they do, how they make money, and their future outlook in 3 sentences."
+    if GEMINI_API_KEY:
+        client = genai.Client(api_key=GEMINI_API_KEY)
+
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.0-flash", contents=prompt
+
+            )
+            return response.text
+        except Exception as e:
+            print(f"An error occurred: {e}")
+    else:
+        print("GEMINI_KEY environment variable not set.")
+
+
+def main():
+    companies = get_sp500_companies()
+    domains = {}
+    summaries = {}
+    for company in companies:
+        ticker = company['ticker']
+        name = company['name']
+        domains[ticker] = get_company_domain(company['wiki_url'])
+        summaries[ticker] = get_summary_from_gemini(ticker, name)
+        # Optional: sleep between API calls to avoid rate limits.
+        time.sleep(0.5)
+    
+    # Print dictionaries for debugging.
+    print(domains)
+    print(summaries)
+    
+    # Write the output to a CSV file.
+    with open("sp500_summaries.csv", "w", newline="", encoding="utf-8") as csvfile:
+        fieldnames = ["ticker", "name", "domain", "summary"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for company in companies:
+            ticker = company["ticker"]
+            writer.writerow({
+                "ticker": ticker,
+                "name": company["name"],
+                "domain": domains.get(ticker, ""),
+                "summary": summaries.get(ticker, "")
+            })
+    print("CSV file generated: sp500_summaries.csv")
+
+
+if __name__ == "__main__":
+    main()

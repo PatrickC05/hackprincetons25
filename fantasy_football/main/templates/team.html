@@ -20,7 +20,7 @@
                     {% for stock in user_stocks %}
                     <tr>
                         <td>{{ stock.sector }}</td>
-                        <td>{{ stock.name }}</td>
+                        <td><a href="{% url 'stock_detail' stock.ticker %}">{{ stock.name }}</href></td>
                         <td>({{ stock.ticker }})</td>
                         <td>${{ stock.price }}</td>
                     </tr>

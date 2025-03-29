@@ -6,7 +6,11 @@
     <div class="matchup-container">
         <!-- Team 1 -->
         <div class="team">
-            <h2>{{team1name}}</h2>
+            <h2><a href="{% url 'team' %}{{ team1id }}">{{ team1name }}</a></h2>
+            <!-- Display the team name as a link to the team page -->
+            {% if first_user_id == user.id %}
+                <p>(You)</p>
+            {% endif %}
             <p>Score: <span id="team1score">{{ team1score }}</span></p>
             <table>
                 <thead>
@@ -14,24 +18,24 @@
                         <th>Sector</th>
                         <th>Name</th>
                         <th>Ticker</th>
-                        <th>Price</th>
+                        <th>Points</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for stock in first_user_sectors %}
                     <tr>
                         {% for sector, abbs in sector_abbs.items %}{% if sector == stock.sector %}<td>{{ abbs }}</td>{% endif %}{% endfor %}
-                        <td>{{ stock.name }}</td>
+                        <td><a href="{% url 'stock_detail' stock.ticker %}">{{ stock.name }}</a></td>
                         <td>({{ stock.ticker }})</td>
-                        <td></td>
+                        {% for ticker, points in stock_scores.items %}{% if ticker == stock.ticker %}<td>{{ points }}</td>{% endif %}{% endfor %}
                     </tr>
                     {% endfor %}
                     {% for stock in first_user_flex %}
                     <tr>
                         <td>FLEX</td>
-                        <td>{{ stock.name }}</td>
+                        <td><a href="{% url 'stock_detail' stock.ticker %}">{{ stock.name }}</a></td>
                         <td>({{ stock.ticker }})</td>
-                        <td>${{ stock.points }}</td>
+                        {% for ticker, points in stock_scores.items %}{% if ticker == stock.ticker %}<td>{{ points }}</td>{% endif %}{% endfor %}
                     </tr>
                     {% endfor %}
                     {% for stock in first_user_bench %}
@@ -39,7 +43,7 @@
                         <td>BENCH</td>
                         <td>{{ stock.name }}</td>
                         <td>({{ stock.ticker }})</td>
-                        <td>${{ stock.points }}</td>
+                        {% for ticker, points in stock_scores.items %}{% if ticker == stock.ticker %}<td>{{ points }}</td>{% endif %}{% endfor %}
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -50,7 +54,7 @@
 
         <!-- Team 2 -->
         <div class="team">
-            <h2>{{team2name}}</h2>
+            <h2><a href="{% url 'team' %}{{ team2id }}">{{ team2name }}</a></h2>
             <p>Score: <span id="team2score">{{team2score}}</span></p>
             <table>
                 <thead>
@@ -58,24 +62,24 @@
                         <th>Sector</th>
                         <th>Name</th>
                         <th>Ticker</th>
-                        <th>Price</th>
+                        <th>Points</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for stock in second_user_sectors %}
                     <tr>
                         {% for sector, abbs in sector_abbs.items %}{% if sector == stock.sector %}<td>{{ abbs }}</td>{% endif %}{% endfor %}
-                        <td>{{ stock.name }}</td>
+                        <td><a href="{% url 'stock_detail' stock.ticker %}">{{ stock.name }}</a></td>
                         <td>({{ stock.ticker }})</td>
-                        {% for istock, points in stock_prices.items %}{% if istock == stock %}<td>{{ points }}</td>{% endif %}{% endfor %}
+                        {% for ticker, points in stock_scores.items %}{% if ticker == stock.ticker %}<td>{{ points }}</td>{% endif %}{% endfor %}
                     </tr>
                     {% endfor %}
                     {% for stock in second_user_flex %}
                     <tr>
                         <td>FLEX</td>
-                        <td>{{ stock.name }}</td>
+                        <td><a href="{% url 'stock_detail' stock.ticker %}">{{ stock.name }}</a></td>
                         <td>({{ stock.ticker }})</td>
-                        <td>${{ stock.points }}</td>
+                        {% for ticker, points in stock_scores.items %}{% if ticker == stock.ticker %}<td>{{ points }}</td>{% endif %}{% endfor %}
                     </tr>
                     {% endfor %}
                     {% for stock in second_user_bench %}
@@ -83,7 +87,7 @@
                         <td>BENCH</td>
                         <td>{{ stock.name }}</td>
                         <td>({{ stock.ticker }})</td>
-                        <td>${{ stock.points }}</td>
+                        {% for ticker, points in stock_scores.items %}{% if ticker == stock.ticker %}<td>{{ points }}</td>{% endif %}{% endfor %}
                     </tr>
                     {% endfor %}
                 </tbody>
