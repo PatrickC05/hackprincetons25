@@ -1,1 +1,5 @@
 django
+numpy
+pandas
+yfinance
+google
