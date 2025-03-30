@@ -7,6 +7,109 @@
 {% block content %}
 <div class="register-container">
     <h2>Register</h2>
+
+    <style>
+        .register-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #FAF1E7; /* Cream background */
+            border: 4px solid #C20E1A; /* Retro red border */
+            border-radius: 10px;
+            box-shadow: 4px 4px 0 #1B2A41; /* Dark blue shadow for depth */
+            text-align: center;
+        }
+
+        .register-container h2 {
+            font-family: 'Lobster', cursive;
+            font-size: 2.5rem;
+            color: #1B2A41; /* Dark Blue */
+            margin-bottom: 20px;
+        }
+
+        .register-container label {
+            display: block;
+            text-align: left;
+            font-weight: bold;
+            color: #1B2A41;
+            margin-top: 15px;
+        }
+
+        .register-container input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #1B2A41;
+            border-radius: 5px;
+            margin-top: 5px;
+            font-size: 1rem;
+            background-color: #fff; /* White input background */
+        }
+
+        .register-container input:focus {
+            border-color: #C20E1A; /* Red border on focus */
+            outline: none;
+        }
+
+        .register-container button {
+            background-color: #C20E1A;
+            color: #FAF1E7;
+            padding: 12px 20px;
+            width: 100%;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: background-color 0.3s ease;
+        }
+
+        .register-container button:hover {
+            background-color: #A10C16; /* Darker red */
+        }
+
+        .register-container p {
+            margin-top: 20px;
+            font-size: 1rem;
+        }
+
+        .register-container a {
+            color: #1B2A41;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .register-container a:hover {
+            text-decoration: underline;
+        }
+
+        .register-container .auth-footer {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #1B2A41;
+        }
+
+        .register-container .auth-footer a {
+            color: #C20E1A;
+        }
+
+        /* Optional checkered border (for extra retro effect) */
+        .register-container:before {
+            content: "";
+            display: block;
+            height: 10px;
+            background: repeating-linear-gradient(
+                90deg,
+                #C20E1A 0,
+                #C20E1A 20px,
+                #FAF1E7 20px,
+                #FAF1E7 40px
+            );
+            margin-bottom: 20px;
+        }
+    </style>
     <form method="POST">
         {% csrf_token %}
         

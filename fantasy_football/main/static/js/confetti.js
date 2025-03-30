@@ -107,8 +107,8 @@ function startConfetti() {
     createParticles();
     drawParticles();
     
-    // Stop confetti after 5 seconds
+    // Stop confetti after 15 seconds instead of 5 seconds
     setTimeout(() => {
         confettiActive = false;
-    }, 5000);
+    }, 15000);
 }

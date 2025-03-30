@@ -1,12 +1,118 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}Login{% endblock %}
+
 {% block content %}
+<div class="login-container">
     <h2>Login</h2>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}  <!-- Renders the login form -->
+        {{ form.as_p }}  
         <button type="submit">Login</button>
     </form>
     <p>Don't have an account? <a href="{% url 'register' %}">Sign up here</a></p>
+</div>
+
+<style>
+    .login-container {
+        max-width: 500px;
+        margin: 50px auto;
+        padding: 30px;
+        background-color: #FAF1E7; /* Cream background */
+        border: 4px solid #C20E1A; /* Retro red border */
+        border-radius: 10px;
+        box-shadow: 4px 4px 0 #1B2A41; /* Dark blue shadow for depth */
+        text-align: center;
+    }
+
+    .login-container h2 {
+        font-family: 'Lobster', cursive;
+        font-size: 2.5rem;
+        color: #1B2A41; /* Dark Blue */
+        margin-bottom: 20px;
+    }
+
+    .login-container label {
+        display: block;
+        text-align: left;
+        font-weight: bold;
+        color: #1B2A41;
+        margin-top: 15px;
+    }
+
+    .login-container input {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #1B2A41;
+        border-radius: 5px;
+        margin-top: 5px;
+        font-size: 1rem;
+        background-color: #fff; /* White input background */
+    }
+
+    .login-container input:focus {
+        border-color: #C20E1A; /* Red border on focus */
+        outline: none;
+    }
+
+    .login-container button {
+        background-color: #C20E1A;
+        color: #FAF1E7;
+        padding: 12px 20px;
+        width: 100%;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 20px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: background-color 0.3s ease;
+    }
+
+    .login-container button:hover {
+        background-color: #A10C16; /* Darker red */
+    }
+
+    .login-container p {
+        margin-top: 20px;
+        font-size: 1rem;
+    }
+
+    .login-container a {
+        color: #1B2A41;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .login-container a:hover {
+        text-decoration: underline;
+    }
+
+    .login-container .auth-footer {
+        margin-top: 20px;
+        font-size: 0.9rem;
+        color: #1B2A41;
+    }
+
+    .login-container .auth-footer a {
+        color: #C20E1A;
+    }
+
+    /* Optional checkered border (for extra retro effect) */
+    .login-container:before {
+        content: "";
+        display: block;
+        height: 10px;
+        background: repeating-linear-gradient(
+            90deg,
+            #C20E1A 0,
+            #C20E1A 20px,
+            #FAF1E7 20px,
+            #FAF1E7 40px
+        );
+        margin-bottom: 20px;
+    }
+</style>
 {% endblock %}

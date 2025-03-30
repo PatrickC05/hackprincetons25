@@ -210,78 +210,57 @@ def matchup(request):
 def stock_detail(request, ticker):
     stock = get_object_or_404(Stock, ticker__iexact=ticker)
 
-    # Retrieve stock info from the database
+    # Retrieve stock info
     name = stock.name
     sector = stock.sector
     pe_ratio = stock.pe
     market_cap = stock.market_cap
     summary = stock.summary
 
-    # --- News API Setup ---
-    # Base URL and API key
+    # --- News API Fetch ---
     url = "https://newsapi.org/v2/everything"
-    api_key = os.getenv("API_KEY")
-
-    # We want articles that include "stock" somewhere in the content.
-    # And we run two queries:
-    #    1. Titles containing the full company name.
-    #    2. Titles containing the ticker symbol.
-    # We then combine the results.
-    base_query = "stock"
-    qInTitle_name = f'"{name}"'
-    qInTitle_ticker = f'"{ticker.upper()}"'
-
-    params1 = {
-        "q": base_query,
-        "qInTitle": qInTitle_name,
+    api_key = os.getenv("API_KEY")  # Make sure you've set this in your environment
+    # More direct query: e.g. "AMZN stock"
+    params = {
+        "q": f"{ticker} stock",  
         "sortBy": "publishedAt",
         "language": "en",
         "apiKey": api_key,
-        "pageSize": 10  # get up to 10 articles for this query
+        "pageSize": 100
     }
 
-    params2 = {
-        "q": base_query,
-        "qInTitle": qInTitle_ticker,
-        "sortBy": "publishedAt",
-        "language": "en",
-        "apiKey": api_key,
-        "pageSize": 10  # get up to 10 articles for this query
-    }
-
-    articles = []
     try:
-        response1 = requests.get(url, params=params1, timeout=5)
-        response1.raise_for_status()
-        data1 = response1.json()
-        articles1 = data1.get("articles", [])
-
-        response2 = requests.get(url, params=params2, timeout=5)
-        response2.raise_for_status()
-        data2 = response2.json()
-        articles2 = data2.get("articles", [])
-
-        # Combine and deduplicate articles (using the article URL as the unique key)
-        seen_urls = set()
-        combined = articles1 + articles2
-        for article in combined:
-            art_url = article.get("url")
-            if art_url and art_url not in seen_urls:
-                seen_urls.add(art_url)
-                articles.append(article)
-        # Optionally, cap the total articles to 10
-        articles = articles[:10]
+        response = requests.get(url, params=params, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        all_articles = data.get("articles", [])
+        print(f"NewsAPI returned {len(all_articles)} articles for '{params['q']}'")
     except (requests.RequestException, ValueError) as e:
         print("Failed to fetch news:", e)
-        articles = []
+        all_articles = []
 
-    # --- Prepare chart data ---
+    # --- Post-filtering ---
+    # We'll just search for the raw ticker in article text
+    ticker_lower = ticker.lower()
+    filtered_articles = []
+    for article in all_articles:
+        title = (article.get("title") or "").lower()
+        description = (article.get("description") or "").lower()
+        content = title + " " + description
+        # If the raw ticker is in the content, consider it relevant
+        if ticker_lower in content:
+            filtered_articles.append(article)
+
+    # Let's cap at 10
+    articles = filtered_articles[:10]
+
+    # --- Prepare historical chart data ---
     historical_prices = stock.historical_prices.order_by('date').values('date', 'open_price', 'close_price')
     chart_data_list = []
     for hp in historical_prices:
         chart_data_list.append({
-            'date': hp['date'].isoformat(),       # ISO format for Chart.js
-            'open_price': float(hp['open_price']),
+            'date': hp['date'].isoformat(),        # Convert date to ISO string
+            'open_price': float(hp['open_price']), # Convert Decimal to float
             'close_price': float(hp['close_price']),
         })
     chart_data_json = json.dumps(chart_data_list)

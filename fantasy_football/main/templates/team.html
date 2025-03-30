@@ -6,7 +6,77 @@
 {% block content %}
     <div class="container">
         <h2>{{ user_profile.team_name }}</h2>
+        <style>
+            .container {
+                background-color: #fff;
+                padding: 1.5rem;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                border-radius: 10px; /* Rounded corners */
+            }
 
+            h2 {
+                font-size: 1.8rem;
+                font-weight: bold;
+                color: #1B2A41;
+            }
+
+            .table-container {
+                margin-top: 1rem;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                border-radius: 10px; /* Rounded corners */
+                overflow: hidden;
+            }
+
+            table thead th {
+                padding: 10px;
+                text-align: left;
+                background-color: #C20E1A;
+                color: #FAF1E7;
+                font-weight: bold;
+            }
+
+            table tbody td {
+                padding: 10px;
+                border-bottom: 1px solid #ddd;
+            }
+
+            .divider td {
+                background-color: #324A5F;
+                color: white;
+                font-weight: bold;
+                padding: 8px;
+            }
+
+            .arrow-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+            }
+
+            .arrow-btn img {
+                width: 20px;
+                height: auto;
+            }
+
+            /* Button hover effect */
+            .arrow-btn:hover img {
+                opacity: 0.7;
+            }
+
+            /* Stock price text styling */
+            td:nth-child(7) {
+                font-weight: bold;
+            }
+
+            /* Make images look more polished */
+            img {
+                border-radius: 5px;
+            }
+        </style>
         <div class="table-container">
             <table>
                 <thead>

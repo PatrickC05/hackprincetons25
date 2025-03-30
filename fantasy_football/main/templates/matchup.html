@@ -24,6 +24,31 @@
         background-color: #fff;
         padding: 1rem;
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        border-radius: 10px; /* Rounded corners */
+    }
+
+    /* New team header container */
+    .team-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.score {
+    margin-left: auto; /* Pushes score to the right */
+    text-align: right;
+    min-width: 60px; /* Ensures alignment consistency */
+}
+
+    .team-header h2 {
+        margin: 0;
+    }
+
+    /* Score styling */
+    .score {
+        font-size: 1.2rem;
+        font-weight: bold;
     }
 
     .vs-text {
@@ -38,6 +63,8 @@
         width: 100%;
         border-collapse: collapse;
         margin-top: 1rem;
+        border-radius: 8px; /* Rounded corners for the table */
+        overflow: hidden;
     }
 
     table thead th {
@@ -59,7 +86,6 @@
     .text-green {
       color: #32CD32;
     }
-
   </style>
 {% endblock %}
 
@@ -67,23 +93,23 @@
     <div class="matchup-container">
         <!-- Team 1 -->
         <div class="team">
-            <h2><a href="{% url 'team' %}{{ team1id }}">{{ team1name }}</a></h2>
+            <div class="team-header">
+              <h2>
+                <a href="{% url 'team' %}{{ team1id }}">{{ team1name }}</a>
+              </h2>
+              <span class="score">
+                {% if team1score < 0 %}
+                  <span class="text-red">{{ team1score }}</span>
+                {% elif team1score > 0 %}
+                  <span class="text-green">{{ team1score }}</span>
+                {% else %}
+                  <span>{{ team1score }}</span>
+                {% endif %}
+              </span>
+            </div>
             {% if first_user_id == user.id %}
                 <p>(You)</p>
             {% endif %}
-
-            <!-- Team 1 Score with color logic -->
-            <p>
-              Score: 
-              {% if team1score < 0 %}
-                <span class="text-red">{{ team1score }}</span>
-              {% elif team1score > 0 %}
-                <span class="text-green">{{ team1score }}</span>
-              {% else %}
-                <span>{{ team1score }}</span>
-              {% endif %}
-            </p>
-
             <table>
                 <thead>
                     <tr>
@@ -102,7 +128,6 @@
                             <td>{{ abbs }}</td>
                           {% endif %}
                         {% endfor %}
-                        <!-- Logo cell -->
                         <td>
                             <img src="{% static 'imgs/logos/' %}{{ stock.ticker }}.png" 
                                  alt="{{ stock.ticker }} Logo" 
@@ -110,8 +135,6 @@
                         </td>
                         <td><a href="{% url 'stock_detail' stock.ticker %}">{{ stock.name }}</a></td>
                         <td>{{ stock.ticker }}</td>
-
-                        <!-- Points with color logic -->
                         {% for ticker, points in stock_scores.items %}
                           {% if ticker == stock.ticker %}
                             {% if points < 0 %}
@@ -181,20 +204,20 @@
 
         <!-- Team 2 -->
         <div class="team">
-            <h2><a href="{% url 'team' %}{{ team2id }}">{{ team2name }}</a></h2>
-
-            <!-- Team 2 Score with color logic -->
-            <p>
-              Score: 
-              {% if team2score < 0 %}
-                <span class="text-red">{{ team2score }}</span>
-              {% elif team2score > 0 %}
-                <span class="text-green">{{ team2score }}</span>
-              {% else %}
-                <span>{{ team2score }}</span>
-              {% endif %}
-            </p>
-
+            <div class="team-header">
+              <h2>
+                <a href="{% url 'team' %}{{ team2id }}">{{ team2name }}</a>
+              </h2>
+              <span class="score">
+                {% if team2score < 0 %}
+                  <span class="text-red">{{ team2score }}</span>
+                {% elif team2score > 0 %}
+                  <span class="text-green">{{ team2score }}</span>
+                {% else %}
+                  <span>{{ team2score }}</span>
+                {% endif %}
+              </span>
+            </div>
             <table>
                 <thead>
                     <tr>
@@ -233,6 +256,7 @@
                         {% endfor %}
                     </tr>
                     {% endfor %}
+
                     {% for stock in second_user_flex %}
                     <tr>
                         <td>FLEX</td>
@@ -256,6 +280,7 @@
                         {% endfor %}
                     </tr>
                     {% endfor %}
+
                     {% for stock in second_user_bench %}
                     <tr>
                         <td>BENCH</td>
