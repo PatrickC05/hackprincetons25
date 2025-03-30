@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from .models import UserProfile, League, Matchup, Stock, StockHistorical
@@ -13,10 +13,12 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from .utils import recent_monday
+import json
+import requests
 
 # Create your views here.
 def home(request):
-    return render(request, 'base.html')
+    return render(request, 'home.html')
 
 class CustomLoginView(LoginView):
     template_name = 'login.html' 
@@ -30,21 +32,92 @@ def team(request):
                    'Health Care': 'HC', 'Industrials': 'IND', 'Information Technology': "IT",
                    'Materials': 'MAT', 'Real Estate': 'RE', 'Utilities': 'UT'}
     user_profile = request.user.userprofile
-    user_stocks = Stock.objects.filter(stockleague__users=user_profile).distinct()
-    return render(request, 'team.html', {'user_profile': user_profile, 'user_stocks': user_stocks,
-                                         'sector_abbs': sector_abbs})
+    active_stocks = Stock.objects.filter(stockleagues__users=user_profile, stockleagues__active=True).distinct()
+    bench_stocks = Stock.objects.filter(stockleagues__users=user_profile, stockleagues__active=False).distinct()
+    sector_abbs = {'Communication Services': 'COM', 'Consumer Discretionary': 'DIS', 
+                   'Consumer Staples': 'STP', 'Energy': 'ENE', 'Financials': 'FIN',
+                   'Health Care': 'HC', 'Industrials': 'IND', 'Information Technology': "IT",
+                   'Materials': 'MAT', 'Real Estate': 'RE', 'Utilities': 'UT'}
+    sectors = ['Communication Services', 'Consumer Discretionary', 
+                   'Consumer Staples', 'Energy', 'Financials',
+                   'Health Care', 'Industrials', 'Information Technology',
+                   'Materials', 'Real Estate', 'Utilities']
+    sector_stocks = {}
+    flex_stocks = []
+    for stock in active_stocks:
+        if len(sector_stocks) < 6 and stock.sector not in sector_stocks:
+            sector_stocks[stock.sector] = stock
+        elif len(flex_stocks) < 3:
+            flex_stocks.append(stock)
+    # for sector in sectors:
+    #     if sector not in sector_stocks:
+    #         sector_stocks[sector] = ''
+    return render(request, 'team.html', {'user_profile': user_profile, 'sector_stocks': sector_stocks,
+                                         'flex_stocks': flex_stocks,'sector_abbs': sector_abbs,
+                                         'sectors': sectors,'bench_stocks':bench_stocks})
+    # user_stocks = Stock.objects.filter(stockleague__users=user_profile).distinct()
+    # return render(request, 'team.html', {'user_profile': user_profile, 'user_stocks': user_stocks,
+    #                                      'sector_abbs': sector_abbs})
 
 def team_view(request, user_id):
     user_profile = get_object_or_404(UserProfile, user__id=user_id)
     if not user_profile.league:
         return HttpResponse("This user is not part of any league.")
+    active_stocks = Stock.objects.filter(stockleagues__users=user_profile, stockleagues__active=True).distinct()
+    bench_stocks = Stock.objects.filter(stockleagues__users=user_profile, stockleagues__active=False).distinct()
     sector_abbs = {'Communication Services': 'COM', 'Consumer Discretionary': 'DIS', 
                    'Consumer Staples': 'STP', 'Energy': 'ENE', 'Financials': 'FIN',
                    'Health Care': 'HC', 'Industrials': 'IND', 'Information Technology': "IT",
                    'Materials': 'MAT', 'Real Estate': 'RE', 'Utilities': 'UT'}
-    user_stocks = Stock.objects.filter(stockleague__users=user_profile).distinct()
-    return render(request, 'team.html', {'user_profile': user_profile, 'user_stocks': user_stocks,
-                                         'sector_abbs': sector_abbs})
+    sectors = ['Communication Services', 'Consumer Discretionary', 
+                   'Consumer Staples', 'Energy', 'Financials',
+                   'Health Care', 'Industrials', 'Information Technology',
+                   'Materials', 'Real Estate', 'Utilities']
+    sector_stocks = {}
+    flex_stocks = []
+    for stock in active_stocks:
+        if len(sector_stocks) < 6 and stock.sector not in sector_stocks:
+            sector_stocks[stock.sector] = stock
+        elif len(flex_stocks) < 3:
+            flex_stocks.append(stock)
+    for sector in sectors:
+        if sector not in sector_stocks:
+            sector_stocks[stock.sector] = ''
+    return render(request, 'team.html', {'user_profile': user_profile, 'sector_stocks': sector_stocks,
+                                         'flex_stocks': flex_stocks,'sector_abbs': sector_abbs,
+                                         'sectors': sectors,'bench_stocks':bench_stocks})
+
+@login_required
+def startsit(request):
+    if request.method == "POST":
+        print("HERE")
+        body = json.loads(request.body) # Print the raw request body for debugging
+        stock1 = get_object_or_404(Stock, ticker__iexact=body.get('ticker'))
+        action = body.get('action')
+        user_profile = request.user.userprofile
+        active_stocks = Stock.objects.filter(stockleagues__users=user_profile, stockleagues__active=True)
+        print(active_stocks)
+        if action == 'start' and active_stocks.count() < 9:
+            # Start the stock
+            stock1.stockleagues.filter(users=request.user.userprofile, active=False).update(active=True)
+            return JsonResponse({'success': True})  # Redirect to the team page after starting the stock
+        elif action == 'sit':
+            # Sit the stock
+            stock1.stockleagues.filter(users=request.user.userprofile, active=True).update(active=False)
+            return JsonResponse({'success': True})
+        elif action == 'swap':
+            stock2 = get_object_or_404(Stock, ticker__iexact=body.get('ticker2'))
+            # Swap the stocks
+            if stock1.stockleagues.filter(users=request.user.userprofile, active=True).exists() and stock2.stockleagues.filter(users=request.user.userprofile, active=False).exists():
+                # Swap which is active and which is inactive, swap them
+                stock1.stockleagues.filter(users=request.user.userprofile, active=True).update(active=False)
+                stock2.stockleagues.filter(users=request.user.userprofile, active=False).update(active=True)
+            return JsonResponse({'success': True})  # Redirect to the team page after swapping
+        return JsonResponse({'success': False, 'message': 'Invalid action.'})
+    else:
+        # If the request is not POST, redirect to the team page
+        return redirect('team')
+
 
 def matchup(request):
     stock_scores = {}
@@ -60,10 +133,10 @@ def matchup(request):
     first_user_flex = []
     first_user_bench = []
     used_sectors = []
-    first_user_stocks = Stock.objects.filter(stockleague__users=user_profile)
-    second_user_stocks = Stock.objects.filter(stockleague__users=opponent)
-    first_active_stocks = Stock.objects.filter(stockleague__users=user_profile, stockleague__active=True)
-    second_active_stocks = Stock.objects.filter(stockleague__users=opponent, stockleague__active=True)
+    first_user_stocks = Stock.objects.filter(stockleagues__users=user_profile)
+    second_user_stocks = Stock.objects.filter(stockleagues__users=opponent)
+    first_active_stocks = Stock.objects.filter(stockleagues__users=user_profile, stockleagues__active=True)
+    second_active_stocks = Stock.objects.filter(stockleagues__users=opponent, stockleagues__active=True)
 
     for stock in first_active_stocks:
         if stock.sector not in used_sectors and len(used_sectors) < 6:
@@ -96,7 +169,6 @@ def matchup(request):
         score = round(stock.get_score(monday), 2)
         stock_scores[stock.ticker] = score
         first_user_score += score
-        print('firstuserscore',first_user_score)
     for stock in first_user_flex:
         score = round(stock.get_score(monday), 2)
         stock_scores[stock.ticker] = score
@@ -137,28 +209,83 @@ def matchup(request):
 
 def stock_detail(request, ticker):
     stock = get_object_or_404(Stock, ticker__iexact=ticker)
-    
+
+    # Retrieve stock info from the database
     name = stock.name
     sector = stock.sector
     pe_ratio = stock.pe
     market_cap = stock.market_cap
-    summary = getattr(stock, 'summary', "No summary available.")
-    
-    # Retrieve historical prices as dictionaries.
+    summary = stock.summary
+
+    # --- News API Setup ---
+    # Base URL and API key
+    url = "https://newsapi.org/v2/everything"
+    api_key = os.getenv("API_KEY")
+
+    # We want articles that include "stock" somewhere in the content.
+    # And we run two queries:
+    #    1. Titles containing the full company name.
+    #    2. Titles containing the ticker symbol.
+    # We then combine the results.
+    base_query = "stock"
+    qInTitle_name = f'"{name}"'
+    qInTitle_ticker = f'"{ticker.upper()}"'
+
+    params1 = {
+        "q": base_query,
+        "qInTitle": qInTitle_name,
+        "sortBy": "publishedAt",
+        "language": "en",
+        "apiKey": api_key,
+        "pageSize": 10  # get up to 10 articles for this query
+    }
+
+    params2 = {
+        "q": base_query,
+        "qInTitle": qInTitle_ticker,
+        "sortBy": "publishedAt",
+        "language": "en",
+        "apiKey": api_key,
+        "pageSize": 10  # get up to 10 articles for this query
+    }
+
+    articles = []
+    try:
+        response1 = requests.get(url, params=params1, timeout=5)
+        response1.raise_for_status()
+        data1 = response1.json()
+        articles1 = data1.get("articles", [])
+
+        response2 = requests.get(url, params=params2, timeout=5)
+        response2.raise_for_status()
+        data2 = response2.json()
+        articles2 = data2.get("articles", [])
+
+        # Combine and deduplicate articles (using the article URL as the unique key)
+        seen_urls = set()
+        combined = articles1 + articles2
+        for article in combined:
+            art_url = article.get("url")
+            if art_url and art_url not in seen_urls:
+                seen_urls.add(art_url)
+                articles.append(article)
+        # Optionally, cap the total articles to 10
+        articles = articles[:10]
+    except (requests.RequestException, ValueError) as e:
+        print("Failed to fetch news:", e)
+        articles = []
+
+    # --- Prepare chart data ---
     historical_prices = stock.historical_prices.order_by('date').values('date', 'open_price', 'close_price')
     chart_data_list = []
     for hp in historical_prices:
         chart_data_list.append({
-            'date': hp['date'].isoformat(),       # Convert date to ISO string
-            'open_price': float(hp['open_price']),  # Convert Decimal to float
+            'date': hp['date'].isoformat(),       # ISO format for Chart.js
+            'open_price': float(hp['open_price']),
             'close_price': float(hp['close_price']),
         })
-    
-    # Convert the list to a JSON string.
     chart_data_json = json.dumps(chart_data_list)
-    
-    news_articles = []
-    
+
     context = {
         'ticker': stock.ticker,
         'name': name,
@@ -166,14 +293,18 @@ def stock_detail(request, ticker):
         'pe_ratio': pe_ratio,
         'market_cap': market_cap,
         'summary': summary,
-        'chart_data_json': chart_data_json,  # Pass JSON string, not the raw list.
-        'articles': news_articles,
+        'chart_data_json': chart_data_json,
+        'articles': articles,
     }
     return render(request, 'stock_detail.html', context)
 
-
+@login_required
 def leaderboard(request):
-    user_profiles = UserProfile.objects.annotate(
+    user_profile = request.user.userprofile
+    if not user_profile.league:
+        messages.error(request, "You are not part of any league.")
+        return redirect('team')  # Redirect to the team page if not part of a league
+    user_profiles = UserProfile.objects.filter(league=user_profile.league).annotate(
         win_count=Count(
             Case(
                 When(matchups_1__first_points__gt=F('matchups_1__second_points'), then=1),
@@ -228,3 +359,6 @@ def register(request):
             return redirect("home")  # Change "home" to your actual homepage URL name
 
     return render(request, "register.html")
+
+def minigame(request):
+    return render(request, 'base.html')

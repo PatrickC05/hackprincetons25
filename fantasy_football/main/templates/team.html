@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}User Portfolio{% endblock %}
 
@@ -10,27 +11,137 @@
             <table>
                 <thead>
                     <tr>
+                        {% if request.path == '/team/' %}<th>Move</th>{% endif %}
+                        <th>Type</th>
                         <th>Sector</th>
+                        <th></th>
                         <th>Name</th>
                         <th>Ticker</th>
                         <th>Price</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for stock in user_stocks %}
+                    <!-- Sector Stocks -->
+                    <tr class="divider">
+                        <td colspan="{% if request.path == '/team/' %}7{% else %}6{% endif %}"><strong>Sector Stocks</strong></td>
+                    </tr>
+                    {% for sector, stock in sector_stocks.items %}
+                    <tr class="sector-row" data-sector="{{ sector }}">
+                        {% if request.path == '/team/' %}{% if stock %}
+                            <td><button class="arrow-btn" onclick="bench_stock('{{ stock.ticker }}')"><img src="{% static 'imgs/down.svg' %}"></button></td>
+                        {% endif %}{% endif %}
+                        <td>Sector</td>
+                        <td>{{ sector }}</td>
+                        {% if stock %}
+                            <td>
+                                <img src="{% static 'imgs/logos/' %}{{ stock.ticker }}.png" 
+                                    alt="{{ stock.ticker }} Logo" 
+                                    style="width:30px; height:auto;"/>
+                            </td>
+                            <td><a href="{% url 'stock_detail' stock.ticker %}">{{ stock.name }}</a></td>
+                            <td>{{ stock.ticker }}</td>
+                            <td>${{ stock.price }}</td>
+                        {% else %}
+                            <td colspan="3"></td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+
+                    <!-- Flex Stocks -->
+                    <tr class="divider">
+                        <td colspan="{% if request.path == '/team/' %}7{% else %}6{% endif %}"><strong>Flex Stocks</strong></td>
+                    </tr>
+                    {% for stock in flex_stocks %}
                     <tr>
-                        <td>{{ stock.sector }}</td>
-                        <td><a href="{% url 'stock_detail' stock.ticker %}">{{ stock.name }}</href></td>
-                        <td>({{ stock.ticker }})</td>
+                        {% if request.path == '/team/' %}<td><button class="arrow-btn" onclick="bench_stock('{{ stock.ticker }}')"><img src="{% static 'imgs/down.svg' %}"></button></td>{% endif %}
+                        <td>FLEX</td>
+                        <td>{{stock.sector}}</td>
+                        <td>
+                            <img src="{% static 'imgs/logos/' %}{{ stock.ticker }}.png" 
+                                 alt="{{ stock.ticker }} Logo" 
+                                 style="width:30px; height:auto;"/>
+                        </td>
+                        <td><a href="{% url 'stock_detail' stock.ticker %}">{{ stock.name }}</a></td>
+                        <td>{{ stock.ticker }}</td>
+                        <td>${{ stock.price }}</td>
+                    </tr>
+                    {% endfor %}
+
+                    <!-- Bench Stocks -->
+                    <tr class="divider">
+                        <td colspan="{% if request.path == '/team/' %}7{% else %}6{% endif %}"><strong>Bench Stocks</strong></td>
+                    </tr>
+                    {% for stock in bench_stocks %}
+                    <tr>
+                        {% if request.path == '/team/' %}<td><button class="arrow-btn" onclick="start_stock('{{ stock.ticker }}')"><img src="{% static 'imgs/up.svg' %}"></button></td>{% endif %}
+                        <td>BENCH</td>
+                        <td>{{stock.sector}}</td>
+                        <td>
+                            <img src="{% static 'imgs/logos/' %}{{ stock.ticker }}.png" 
+                                 alt="{{ stock.ticker }} Logo" 
+                                 style="width:30px; height:auto;"/>
+                        </td>
+                        <td><a href="{% url 'stock_detail' stock.ticker %}">{{ stock.name }}</a></td>
+                        <td>{{ stock.ticker }}</td>
                         <td>${{ stock.price }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="4">No stocks chosen by this team</td>
+                        <td colspan="6">No bench stocks</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
+
+    <script>
+        // Function to handle clicking the up arrow
+        function start_stock(ticker) {
+            console.log("TICKER:" + ticker);
+            // Get the number of currently active stocks
+            const activeStocks = document.querySelectorAll('.sector-row[data-sector="active"]').length;
+    
+            // If there are already 9 active stocks, prompt to swap
+            if (activeStocks >= 9) {
+                const stockToSit = prompt("You have 9 active stocks. Which one would you like to bench?", "Enter ticker of stock to bench");
+                if (stockToSit) {
+                    // Send swap action with both stock tickers
+                    send_stock_action('swap', ticker, stockToSit);
+                } else {
+                    alert("You need to bench a stock before starting a new one.");
+                }
+            } else {
+                // If there are fewer than 9 active stocks, just start the stock
+                send_stock_action('start', ticker);
+            }
+        }
+    
+        function bench_stock(ticker) {
+            send_stock_action('sit', ticker);
+        }
+    
+        function send_stock_action(action, ticker, ticker2 = null) {
+            const csrfToken = "{{ csrf_token }}";
+    
+            const data = { 'action': action, 'ticker': ticker };
+            console.log(data)
+            if (ticker2) {
+                data.ticker2 = ticker2;
+            }
+    
+            fetch("{% url 'startsit' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken,
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(() => location.reload());
+        }
+    </script>
+
+
 {% endblock %}

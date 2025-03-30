@@ -1,56 +1,58 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}FANTASY STOCKS{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <script src="{% static 'js/floating-money.js' %}" defer></script> <!-- Link to external JS file -->
-    {% block morestyle %}{% endblock %}
-    <script>
-        function confirmLogout(event) {
-            event.preventDefault();
-            if (confirm("Are you sure you want to log out?")) {
-                window.location.href = "{% url 'logout' %}"; // Redirect to logout URL
-            }
-        }
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title class="retro-text">{% block title %}FANTASY STOCKS{% endblock %}</title>
+  <!-- Link to your CSS -->
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <!-- Link to your floating money JS (defer ensures it runs after DOM loads) -->
+  <script src="{% static 'js/floating-money.js' %}" defer></script>
+
+  {% block morestyle %}{% endblock %}
+  
+  <script>
+    function confirmLogout(event) {
+      event.preventDefault();
+      if (confirm("Are you sure you want to log out?")) {
+        window.location.href = "{% url 'logout' %}";
+      }
+    }
+  </script>
 </head>
+
 <body>
-    <header>
-        <h1>FANTASY STOCKS</h1>
-        <nav>
-            <a href="{% url 'home' %}">Home</a>
-            <a href="{% url 'leaderboard' %}" onclick="startConfetti()">Leaderboard</a>
-            {% if user.is_authenticated %}
-                <a href="{% url 'matchup' %}">Matchup</a>
-                <a href="{% url 'team' %}">Team</a>
-                <a href="#" onclick="confirmLogout(event)">Logout</a>
-            {% else %}
-                <a href="{% url 'login' %}">Login</a>
-            {% endif %}
-        </nav>
-    </header>
+  <header>
+    <h1 class="retro-text">FANTASY STOCKS</h1>
+    <nav>
+      <a href="{% url 'home' %}">Home</a>
+      
+      {% if user.is_authenticated %}
+        <a href="{% url 'team' %}">Team</a>
+        <a href="{% url 'matchup' %}">Matchup</a>
+        <a href="{% url 'leaderboard' %}">Leaderboard</a>
+        <a href="{% url 'logout' %}">Logout</a>
+      {% else %}
+        <a href="{% url 'login' %}">Login</a>
+      {% endif %}
+    </nav>
+  </header>
 
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+  <!-- MAIN CONTENT -->
+  <main>
+    {% block content %}{% endblock %}
 
-    <footer>
-        <p>&copy; Created by The Rile-Taters and Pataya Pies</p>
-    </footer>
-
-    
-    <!-- Floating Money Animation for Home Page Only -->
-    {% if request.path == '/' %}
-        <div id="floating-money">
-            <span class="money">$</span>
-            <span class="money">$</span>
-            <span class="money">$</span>
-            <span class="money">$</span>
-        </div>
+    <!-- Only include the floating money div on the home page (request.path === '/') -->
+    {% if request.path == '/minigame/' %}
+      <div id="floating-money"></div>
+      <!-- <script src="{% static 'js/floating-money.js' %}" defer></script> -->
     {% endif %}
+  </main>
+
+  <footer>
+    <p>&copy; Created by The Rile-Taters and Pataya Pies</p>
+  </footer>
 </body>
 </html>

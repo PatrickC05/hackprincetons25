@@ -1,21 +1,94 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block title %}Matchup{% endblock %}
+
+{% block morestyle %}
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1/dist/chart.umd.min.js"></script>
+  <!-- Moment.js (required for chartjs-adapter-moment) -->
+  <script src="https://cdn.jsdelivr.net/npm/moment@2.29.2/moment.min.js"></script>
+  <!-- Chart.js adapter for Moment.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
+
+  <style>
+    /* Overall matchup layout */
+    .matchup-container {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+    }
+
+    .team {
+        width: 45%;
+        margin-bottom: 1rem;
+        background-color: #fff;
+        padding: 1rem;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .vs-text {
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 2rem;
+        color: #C20E1A;
+    }
+
+    /* Table Styling */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    table thead th {
+        padding: 8px 5px;
+        text-align: left;
+        background-color: #C20E1A;
+        color: #FAF1E7;
+    }
+
+    table tbody td {
+        padding: 8px 5px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    /* Color negative in red, positive in green */
+    .text-red {
+      color: red;
+    }
+    .text-green {
+      color: #32CD32;
+    }
+
+  </style>
+{% endblock %}
 
 {% block content %}
     <div class="matchup-container">
         <!-- Team 1 -->
         <div class="team">
             <h2><a href="{% url 'team' %}{{ team1id }}">{{ team1name }}</a></h2>
-            <!-- Display the team name as a link to the team page -->
             {% if first_user_id == user.id %}
                 <p>(You)</p>
             {% endif %}
-            <p>Score: <span id="team1score">{{ team1score }}</span></p>
+
+            <!-- Team 1 Score with color logic -->
+            <p>
+              Score: 
+              {% if team1score < 0 %}
+                <span class="text-red">{{ team1score }}</span>
+              {% elif team1score > 0 %}
+                <span class="text-green">{{ team1score }}</span>
+              {% else %}
+                <span>{{ team1score }}</span>
+              {% endif %}
+            </p>
+
             <table>
                 <thead>
                     <tr>
                         <th>Sector</th>
+                        <th></th> <!-- Blank header for logo column -->
                         <th>Name</th>
                         <th>Ticker</th>
                         <th>Points</th>
@@ -24,26 +97,80 @@
                 <tbody>
                     {% for stock in first_user_sectors %}
                     <tr>
-                        {% for sector, abbs in sector_abbs.items %}{% if sector == stock.sector %}<td>{{ abbs }}</td>{% endif %}{% endfor %}
+                        {% for sector, abbs in sector_abbs.items %}
+                          {% if sector == stock.sector %}
+                            <td>{{ abbs }}</td>
+                          {% endif %}
+                        {% endfor %}
+                        <!-- Logo cell -->
+                        <td>
+                            <img src="{% static 'imgs/logos/' %}{{ stock.ticker }}.png" 
+                                 alt="{{ stock.ticker }} Logo" 
+                                 style="width:30px; height:auto;"/>
+                        </td>
                         <td><a href="{% url 'stock_detail' stock.ticker %}">{{ stock.name }}</a></td>
-                        <td>({{ stock.ticker }})</td>
-                        {% for ticker, points in stock_scores.items %}{% if ticker == stock.ticker %}<td>{{ points }}</td>{% endif %}{% endfor %}
+                        <td>{{ stock.ticker }}</td>
+
+                        <!-- Points with color logic -->
+                        {% for ticker, points in stock_scores.items %}
+                          {% if ticker == stock.ticker %}
+                            {% if points < 0 %}
+                              <td class="text-red">{{ points }}</td>
+                            {% elif points > 0 %}
+                              <td class="text-green">{{ points }}</td>
+                            {% else %}
+                              <td>{{ points }}</td>
+                            {% endif %}
+                          {% endif %}
+                        {% endfor %}
                     </tr>
                     {% endfor %}
+
                     {% for stock in first_user_flex %}
                     <tr>
                         <td>FLEX</td>
+                        <td>
+                            <img src="{% static 'imgs/logos/' %}{{ stock.ticker }}.png" 
+                                 alt="{{ stock.ticker }} Logo" 
+                                 style="width:30px; height:auto;"/>
+                        </td>
                         <td><a href="{% url 'stock_detail' stock.ticker %}">{{ stock.name }}</a></td>
-                        <td>({{ stock.ticker }})</td>
-                        {% for ticker, points in stock_scores.items %}{% if ticker == stock.ticker %}<td>{{ points }}</td>{% endif %}{% endfor %}
+                        <td>{{ stock.ticker }}</td>
+                        {% for ticker, points in stock_scores.items %}
+                          {% if ticker == stock.ticker %}
+                            {% if points < 0 %}
+                              <td class="text-red">{{ points }}</td>
+                            {% elif points > 0 %}
+                              <td class="text-green">{{ points }}</td>
+                            {% else %}
+                              <td>{{ points }}</td>
+                            {% endif %}
+                          {% endif %}
+                        {% endfor %}
                     </tr>
                     {% endfor %}
+
                     {% for stock in first_user_bench %}
                     <tr>
                         <td>BENCH</td>
-                        <td>{{ stock.name }}</td>
-                        <td>({{ stock.ticker }})</td>
-                        {% for ticker, points in stock_scores.items %}{% if ticker == stock.ticker %}<td>{{ points }}</td>{% endif %}{% endfor %}
+                        <td>
+                            <img src="{% static 'imgs/logos/' %}{{ stock.ticker }}.png" 
+                                 alt="{{ stock.ticker }} Logo" 
+                                 style="width:30px; height:auto;"/>
+                        </td>
+                        <td><a href="{% url 'stock_detail' stock.ticker %}">{{ stock.name }}</a></td>
+                        <td>{{ stock.ticker }}</td>
+                        {% for ticker, points in stock_scores.items %}
+                          {% if ticker == stock.ticker %}
+                            {% if points < 0 %}
+                              <td class="text-red">{{ points }}</td>
+                            {% elif points > 0 %}
+                              <td class="text-green">{{ points }}</td>
+                            {% else %}
+                              <td>{{ points }}</td>
+                            {% endif %}
+                          {% endif %}
+                        {% endfor %}
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -55,11 +182,24 @@
         <!-- Team 2 -->
         <div class="team">
             <h2><a href="{% url 'team' %}{{ team2id }}">{{ team2name }}</a></h2>
-            <p>Score: <span id="team2score">{{team2score}}</span></p>
+
+            <!-- Team 2 Score with color logic -->
+            <p>
+              Score: 
+              {% if team2score < 0 %}
+                <span class="text-red">{{ team2score }}</span>
+              {% elif team2score > 0 %}
+                <span class="text-green">{{ team2score }}</span>
+              {% else %}
+                <span>{{ team2score }}</span>
+              {% endif %}
+            </p>
+
             <table>
                 <thead>
                     <tr>
                         <th>Sector</th>
+                        <th></th>
                         <th>Name</th>
                         <th>Ticker</th>
                         <th>Points</th>
@@ -68,26 +208,75 @@
                 <tbody>
                     {% for stock in second_user_sectors %}
                     <tr>
-                        {% for sector, abbs in sector_abbs.items %}{% if sector == stock.sector %}<td>{{ abbs }}</td>{% endif %}{% endfor %}
+                        {% for sector, abbs in sector_abbs.items %}
+                          {% if sector == stock.sector %}
+                            <td>{{ abbs }}</td>
+                          {% endif %}
+                        {% endfor %}
+                        <td>
+                            <img src="{% static 'imgs/logos/' %}{{ stock.ticker }}.png" 
+                                 alt="{{ stock.ticker }} Logo" 
+                                 style="width:30px; height:auto;"/>
+                        </td>
                         <td><a href="{% url 'stock_detail' stock.ticker %}">{{ stock.name }}</a></td>
-                        <td>({{ stock.ticker }})</td>
-                        {% for ticker, points in stock_scores.items %}{% if ticker == stock.ticker %}<td>{{ points }}</td>{% endif %}{% endfor %}
+                        <td>{{ stock.ticker }}</td>
+                        {% for ticker, points in stock_scores.items %}
+                          {% if ticker == stock.ticker %}
+                            {% if points < 0 %}
+                              <td class="text-red">{{ points }}</td>
+                            {% elif points > 0 %}
+                              <td class="text-green">{{ points }}</td>
+                            {% else %}
+                              <td>{{ points }}</td>
+                            {% endif %}
+                          {% endif %}
+                        {% endfor %}
                     </tr>
                     {% endfor %}
                     {% for stock in second_user_flex %}
                     <tr>
                         <td>FLEX</td>
+                        <td>
+                            <img src="{% static 'imgs/logos/' %}{{ stock.ticker }}.png" 
+                                 alt="{{ stock.ticker }} Logo" 
+                                 style="width:30px; height:auto;"/>
+                        </td>
                         <td><a href="{% url 'stock_detail' stock.ticker %}">{{ stock.name }}</a></td>
-                        <td>({{ stock.ticker }})</td>
-                        {% for ticker, points in stock_scores.items %}{% if ticker == stock.ticker %}<td>{{ points }}</td>{% endif %}{% endfor %}
+                        <td>{{ stock.ticker }}</td>
+                        {% for ticker, points in stock_scores.items %}
+                          {% if ticker == stock.ticker %}
+                            {% if points < 0 %}
+                              <td class="text-red">{{ points }}</td>
+                            {% elif points > 0 %}
+                              <td class="text-green">{{ points }}</td>
+                            {% else %}
+                              <td>{{ points }}</td>
+                            {% endif %}
+                          {% endif %}
+                        {% endfor %}
                     </tr>
                     {% endfor %}
                     {% for stock in second_user_bench %}
                     <tr>
                         <td>BENCH</td>
-                        <td>{{ stock.name }}</td>
-                        <td>({{ stock.ticker }})</td>
-                        {% for ticker, points in stock_scores.items %}{% if ticker == stock.ticker %}<td>{{ points }}</td>{% endif %}{% endfor %}
+                        <td>
+                            <img src="{% static 'imgs/logos/' %}{{ stock.ticker }}.png" 
+                                 alt="{{ stock.ticker }} Logo" 
+                                 style="width:30px; height:auto;"/>
+                        </td>
+                        <td><a href="{% url 'stock_detail' stock.ticker %}">{{ stock.name }}</a></td>
+                        <td>{{ stock.ticker }}</td>
+                        {% for ticker, points in stock_scores.items %}
+                          {% if ticker == stock.ticker %}
+                            {% if points < 0 %}
+                              <td class="text-red">{{ points }}</td>
+                            {% elif points > 0 %}
+                              <td class="text-green">{{ points }}</td>
+                            {% else %}
+                              <td>{{ points }}</td>
+                            {% endif %}
+                          {% endif %}
+                        {% endfor %}
                     </tr>
                     {% endfor %}
                 </tbody>

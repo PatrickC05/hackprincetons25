@@ -14,7 +14,7 @@ class StockHistorical(models.Model):
         return f"{self.stock.ticker} - {self.date.strftime('%Y-%m-%d')}"
 
 class StockLeague(models.Model):
-    stock = models.ForeignKey('Stock', on_delete=models.CASCADE)
+    stock = models.ForeignKey('Stock', on_delete=models.CASCADE, related_name='stockleagues')
     league = models.ForeignKey('League', on_delete=models.CASCADE, related_name='stocks')
     active = models.BooleanField(default=True)
 
@@ -27,7 +27,8 @@ class Stock(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     pe = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     market_cap = models.DecimalField(max_digits=20, decimal_places=2)
-    sector = models.CharField(max_length=20)
+    sector = models.CharField(max_length=50)
+    summary = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.ticker
@@ -36,7 +37,7 @@ class Stock(models.Model):
         try:
             start_price = self.historical_prices.get(date=monday).open_price
             end_price = self.historical_prices.get(date=monday + datetime.timedelta(days=4)).close_price
-            return ((end_price - start_price) / start_price) * 1000
+            return ((end_price - start_price) / start_price) * 100
         except StockHistorical.DoesNotExist:
             return None
     

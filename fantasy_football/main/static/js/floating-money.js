@@ -1,139 +1,168 @@
 // document.addEventListener('DOMContentLoaded', function () {
-//     if (window.location.pathname === '/') { // Only apply on home page
-//         const container = document.getElementById('floating-money');
-        
-//         // Ensure the container has the correct dimensions before calculation
-//         const containerWidth = container.offsetWidth;
-//         const containerHeight = container.offsetHeight;
-//         const moneySize = 30; // Size of the money signs (adjust as needed)
+//   if (window.location.pathname === '/') {
+//     // Hard-coded offsets for header & footer
+//     const HEADER_HEIGHT = 131;
+//     const FOOTER_HEIGHT = 55;
 
-//         // Function to create a single money sign
-//         function createMoneySign() {
-//             const moneySign = document.createElement('span');
-//             moneySign.classList.add('money');
-//             moneySign.textContent = '$'; // Dollar sign
-//             container.appendChild(moneySign);
+//     // We'll treat the entire viewport as the container for bounding.
+//     const containerWidth = window.innerWidth;
+//     const containerHeight = window.innerHeight;
 
-//             // Random initial position, ensuring the sign doesn't start off-screen
-//             let x = Math.random() * (containerWidth - moneySize); // Random X within container bounds
-//             let y = Math.random() * (containerHeight - moneySize); // Random Y within container bounds
-//             let xSpeed = Math.random() * 2 + 1; // Random speed in X direction
-//             let ySpeed = Math.random() * 2 + 1; // Random speed in Y direction
-//             let isSwimming = false; // Flag to control swimming away behavior
-//             let swimAngle = 0;
-//             let swimSpeed = 0;
+//     const moneySize = 30; // approximate size (px) of your '$' element
 
-//             // Set the initial position of the money sign
-//             moneySign.style.position = 'absolute';
-//             moneySign.style.transform = `translate(${x}px, ${y}px)`;
+//     function createMoneySign() {
+//       const moneySign = document.createElement('span');
+//       moneySign.classList.add('money');
+//       moneySign.textContent = '$';
+//       document.body.appendChild(moneySign); 
+//       // ^ Directly appending to <body>. (Or you can still append to #floating-money
+//       //   if you prefer, but be aware it might overlap. The bounding logic won't care.)
 
-//             // Function to animate the money sign
-//             function move() {
-//                 // If the sign is "swimming," adjust its movement
-//                 if (isSwimming) {
-//                     x += Math.cos(swimAngle) * swimSpeed;
-//                     y += Math.sin(swimAngle) * swimSpeed;
-//                 } else {
-//                     // Otherwise, perform the regular bouncing logic
-//                     x += xSpeed;
-//                     y += ySpeed;
+//       // We'll pick a random X between 0 and containerWidth
+//       // We'll pick a random Y between HEADER_HEIGHT and containerHeight - FOOTER_HEIGHT
+//       let x = Math.random() * (containerWidth - moneySize);
+//       let y = HEADER_HEIGHT + Math.random() * ((containerHeight - HEADER_HEIGHT - FOOTER_HEIGHT) - moneySize);
 
-//                     // If the money sign hits the boundaries, reverse its direction
-//                     if (x >= containerWidth - moneySize || x <= 0) {
-//                         xSpeed = -xSpeed;
-//                     }
-//                     if (y >= containerHeight - moneySize || y <= 0) {
-//                         ySpeed = -ySpeed;
-//                     }
-//                 }
+//       // Speeds
+//       let xSpeed = Math.random() * 2 + 1;
+//       let ySpeed = Math.random() * 2 + 1;
 
-//                 // Apply the new position
-//                 moneySign.style.transform = `translate(${x}px, ${y}px)`;
+//       function move() {
+//         x += xSpeed;
+//         y += ySpeed;
 
-//                 requestAnimationFrame(move);  // Continue the animation
-//             }
-
-//             move();
-
-//             // Return an object to access and manipulate the swimming behavior
-//             return {
-//                 moneySign: moneySign,
-//                 startSwimming: function (clickX, clickY) {
-//                     // Calculate the angle from the money sign to the click position
-//                     const angle = Math.atan2(y - clickY, x - clickX);
-//                     swimSpeed = 3 + Math.random() * 3;  // Random swimming speed
-//                     swimAngle = angle;  // Set swimming direction
-//                     isSwimming = true;  // Enable swimming behavior
-//                 }
-//             };
+//         // Bounce if hitting the left or right edges
+//         if (x <= 0 || x >= (containerWidth - moneySize)) {
+//           xSpeed = -xSpeed;
 //         }
 
-//         // Create multiple money signs
-//         const moneySigns = [];
-//         for (let i = 0; i < 100; i++) {  // You can increase the number to add more dollar signs
-//             const money = createMoneySign();
-//             moneySigns.push(money);
+//         // Bounce if hitting the "top boundary" = header's bottom, or the "bottom boundary" = top of footer
+//         // which is containerHeight - FOOTER_HEIGHT
+//         if (y <= HEADER_HEIGHT || y >= (containerHeight - FOOTER_HEIGHT - moneySize)) {
+//           ySpeed = -ySpeed;
 //         }
 
-//         // Make the money swim away when the user clicks anywhere on the screen
-//         container.addEventListener('click', function (event) {
-//             const clickX = event.clientX - container.offsetLeft;  // Adjust for container position
-//             const clickY = event.clientY - container.offsetTop;  // Adjust for container position
+//         moneySign.style.transform = translate(${x}px, ${y}px) translate(-50%, -50%);
+//         requestAnimationFrame(move);
+//       }
 
-//             console.log(`Click at: ${clickX}, ${clickY}`); // Debugging log to check click position
-
-//             // Loop through all the money signs and move them away from the click position
-//             moneySigns.forEach(money => {
-//                 money.startSwimming(clickX, clickY);
-//             });
-//         });
+//       move();
 //     }
+
+//     // Create multiple '$' signs
+//     for (let i = 0; i < 100; i++) {
+//       createMoneySign();
+//     }
+//   }
 // });
 document.addEventListener('DOMContentLoaded', function () {
-    if (window.location.pathname === '/') { // Only apply on home page
-        const container = document.getElementById('floating-money');
-        const containerWidth = container.offsetWidth;
-        const containerHeight = container.offsetHeight;
-        const moneySize = 30; // Size of the money signs (adjust as needed)
+  if (window.location.pathname === '/minigame/') {
+    const HEADER_HEIGHT = 185;
+    const FOOTER_HEIGHT = 55;
+    const containerWidth = window.innerWidth;
+    const containerHeight = window.innerHeight;
 
-        function createMoneySign() {
-            const moneySign = document.createElement('span');
-            moneySign.classList.add('money');
-            moneySign.textContent = '$'; // Dollar sign
+    const moneySize = 30; // Size of the dollar sign element
 
-            container.appendChild(moneySign);
-
-            // Random initial position, ensuring the sign doesn't start off-screen
-            let x = Math.random() * (containerWidth - moneySize);
-            let y = Math.random() * (containerHeight - moneySize);
-            let xSpeed = Math.random() * 2 + 1; // Random speed in X direction
-            let ySpeed = Math.random() * 2 + 1; // Random speed in Y direction
-
-            // Function to animate the money sign
-            function move() {
-                x += xSpeed;
-                y += ySpeed;
-
-                // If the money sign hits the boundaries, reverse its direction
-                if (x >= containerWidth - moneySize || x <= 0) {
-                    xSpeed = -xSpeed;
-                }
-                if (y >= containerHeight - moneySize || y <= 0) {
-                    ySpeed = -ySpeed;
-                }
-
-                // Apply the new position
-                moneySign.style.transform = `translate(${x}px, ${y}px)`;
-
-                requestAnimationFrame(move);  // Continue the animation
-            }
-
-            move();
-        }
-
-        // Create multiple money signs
-        for (let i = 0; i < 100; i++) {  // You can increase the number to add more dollar signs
-            createMoneySign();
-        }
+    const floatingMoneyContainer = document.getElementById('floating-money');
+    if (!floatingMoneyContainer) {
+      // Create a container if it doesn't exist
+      const container = document.createElement('div');
+      container.id = 'floating-money';
+      container.style.position = 'fixed';
+      container.style.top = '0';
+      container.style.left = '0';
+      container.style.width = '100vw';
+      container.style.height = '100vh';
+      container.style.pointerEvents = 'none';
+      container.style.zIndex = '9999';
+      document.body.appendChild(container);
     }
+
+    // Array to hold all the floating dollar signs
+    let moneySigns = [];
+
+    // Function to create and animate each dollar sign
+    function createMoneySign() {
+      const moneySign = document.createElement('span');
+      moneySign.classList.add('money');
+      moneySign.textContent = '$';
+      floatingMoneyContainer.appendChild(moneySign);
+
+      // Random start position
+      let x = Math.random() * (containerWidth - moneySize);
+      let y = HEADER_HEIGHT + Math.random() * (containerHeight - HEADER_HEIGHT - FOOTER_HEIGHT - moneySize);
+
+      // Random speed
+      let xSpeed = Math.random() * 2 + 1;
+      let ySpeed = Math.random() * 2 + 1;
+
+      // Store position, speed, and state for later reference
+      moneySign.x = x;
+      moneySign.y = y;
+      moneySign.xSpeed = xSpeed;
+      moneySign.ySpeed = ySpeed;
+      moneySign.moving = true; // Initially moving
+
+      // Movement function
+      function move() {
+        if (!moneySign.moving) return; // Skip movement if "swimming" away
+
+        moneySign.x += moneySign.xSpeed;
+        moneySign.y += moneySign.ySpeed;
+
+        // Bounce off the walls (with proper bounds)
+        if (moneySign.x <= 0 || moneySign.x >= (containerWidth - moneySize)) {
+          moneySign.xSpeed = -moneySign.xSpeed;
+        }
+
+        if (moneySign.y <= HEADER_HEIGHT || moneySign.y >= (containerHeight - FOOTER_HEIGHT - moneySize)) {
+          moneySign.ySpeed = -moneySign.ySpeed;
+        }
+
+        // Apply the transform to the dollar sign
+        moneySign.style.transform = `translate(${moneySign.x}px, ${moneySign.y}px) translate(-50%, -50%)`;
+
+        requestAnimationFrame(move);
+      }
+
+      move();
+      moneySigns.push(moneySign); // Add the sign to the array
+    }
+
+    // Create 100 dollar signs
+    for (let i = 0; i < 100; i++) {
+      createMoneySign();
+    }
+
+    // Handle mouse click events (touchpad press should also trigger click)
+    document.addEventListener('click', function (event) {
+      const mouseX = event.clientX;
+      const mouseY = event.clientY;
+      console.log("Mouse clicked at", mouseX, mouseY); // Debugging click location
+
+      // Check if the mouse is near any of the dollar signs and make them swim away
+      moneySigns.forEach(function (sign) {
+        const distance = Math.sqrt(Math.pow(sign.x - mouseX, 2) + Math.pow(sign.y - mouseY, 2));
+
+        if (distance < 150) { // You can adjust this distance to your liking
+          const angle = Math.atan2(sign.y - mouseY, sign.x - mouseX);
+          const swimSpeed = 50; // Speed at which the dollar signs swim away
+
+          // Temporarily disable normal movement
+          sign.moving = false;
+
+          // Move the sign away from the click
+          sign.x += Math.cos(angle) * swimSpeed;
+          sign.y += Math.sin(angle) * swimSpeed;
+
+          // Reset the sign to resume normal movement after 500ms
+          setTimeout(function () {
+            sign.moving = true;
+          }, 500); // Reset after 500ms
+        }
+      });
+    });
+  }
 });
+

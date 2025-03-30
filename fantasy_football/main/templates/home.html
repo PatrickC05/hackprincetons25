@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Fantasy Stocks: Landing{% endblock %}
+
+{% block morestyle %}
+<!-- Include any extra styles from the second snippet -->
+<style>
+  body {
+    /* Inherit from base, but you can override as needed */
+    overflow-x: hidden; /* keep from the snippet */
+  }
+
+  /* Hero Section Overrides */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    background-color: #C20E1A; /* Retro Red */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 3rem 1rem;
+    margin-bottom: 2rem; /* Add spacing before next section */
+  }
+  .hero h1 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 3rem;
+    color: #FAF1E7;
+    margin-bottom: 1rem;
+    letter-spacing: 2px;
+    animation: fadeSlide 1s ease forwards;
+  }
+  .hero p {
+    max-width: 700px;
+    color: #FAF1E7;
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    animation: fadeIn 1.5s ease forwards;
+    animation-delay: 0.5s;
+  }
+
+  .cta-buttons {
+    display: flex;
+    gap: 1rem;
+    animation: fadeIn 2s ease forwards;
+    animation-delay: 0.8s;
+  }
+  .cta {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border: 2px solid #FAF1E7;
+    border-radius: 6px;
+    background: transparent;
+    color: #FAF1E7;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+  }
+  .cta:hover {
+    background: #FAF1E7;
+    color: #C20E1A;
+    transform: scale(1.05);
+  }
+
+  /* Floating Dollars */
+  .floating-dollars {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .floating-dollars span {
+    position: absolute;
+    color: rgba(250,241,231,0.5);
+    font-size: 2rem;
+    animation: floatDollar 6s linear infinite;
+  }
+  @keyframes floatDollar {
+    0% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) rotate(360deg);
+      opacity: 0;
+    }
+  }
+
+  /* Features Section */
+  .features {
+    margin: 0 auto;
+    padding: 3rem 1rem;
+    max-width: 1200px;
+    text-align: center;
+  }
+  .features h2 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 2.5rem;
+    color: #C20E1A;
+    margin-bottom: 2rem;
+  }
+  .cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: center;
+  }
+  .card {
+    background: #fff;
+    border-radius: 8px;
+    width: 280px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    text-align: left;
+    transition: transform 0.3s;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+  }
+  .card h3 {
+    margin-bottom: 0.5rem;
+    font-family: 'Oswald', sans-serif;
+    color: #444;
+  }
+  .card p {
+    color: #555;
+    line-height: 1.4;
+  }
+
+  /* Animations from snippet */
+  @keyframes fadeSlide {
+    0% {
+      transform: translateY(-50px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO SECTION -->
+<section class="hero">
+  <div class="floating-dollars">
+    <span style="left: 10%; animation-duration: 7s;">$</span>
+    <span style="left: 25%; animation-duration: 5s;">$</span>
+    <span style="left: 40%; animation-duration: 6s;">$</span>
+    <span style="left: 60%; animation-duration: 8s;">$</span>
+    <span style="left: 75%; animation-duration: 4s;">$</span>
+    <span style="left: 90%; animation-duration: 5s;">$</span>
+  </div>
+  
+  <h1>Fantasy Stocks</h1>
+  <p>Compete with friends, draft your dream portfolio, and turn your trades into trophies—all in our retro-inspired stock league!</p>
+
+  <div class="cta-buttons">
+    <a href="#" class="cta">Sign Up</a>
+    <a href="#" class="cta">Leaderboard</a>
+  </div>
+</section>
+
+<!-- FEATURES SECTION -->
+<section class="features">
+  <h2>Draft, Trade, Triumph!</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>Pick Your Team</h3>
+      <p>Select the stocks you believe in—no spreadsheets needed. Just your gut or your research, you decide!</p>
+    </div>
+    <div class="card">
+      <h3>Real-Time Points</h3>
+      <p>Watch your points update live. Celebrate big gains and brace for dips as the market moves.</p>
+    </div>
+    <div class="card">
+      <h3>Climb the Ranks</h3>
+      <p>Follow your progress on the global or league leaderboard. Earn bragging rights with each weekly surge!</p>
+    </div>
+    <div class="card">
+      <h3>Join a League</h3>
+      <p>Invite friends, family, or coworkers and see who’s got the best trading instincts.</p>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

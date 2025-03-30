@@ -1,11 +1,11 @@
 #floating-money {
-    position: fixed; 
-    top: 0;
-    left: 0;
-    width: 100vw; 
-    height: 100vh; 
-    pointer-events: none;
-    z-index: 900; 
+  position: fixed; 
+  top: 0;
+  left: 0;
+  width: 100vw; 
+  height: 100vh; 
+  pointer-events: none;
+  z-index: -9999;
 }
 
 .money {
@@ -15,6 +15,42 @@
     pointer-events: none;
     opacity: 0.8; 
     transform: translate(-50%, -50%); 
+}
+
+
+@font-face {
+  font-family: 'Retronic';
+  src: url('../fonts/Retronic-Font/Web-PS/Retronic.woff2') format('woff2'),
+       url('../fonts/Retronic-Font/Web-TT/Retronic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* Apply the font */
+.retro-text {
+  font-family: 'Retronic', sans-serif;
+  font-size: 60px;
+  color: #fffaf0; /* Cream color */
+  text-shadow: 
+      3px 3px 0px #8b0000,  /* Dark red shadow */
+      6px 6px 0px #000080,  /* Navy blue shadow */
+      9px 9px 0px #333333;  /* Deep shadow for depth */
+}
+
+.button {
+    background-color: #8b0000;
+    color: #fffaf0;
+    font-family: 'Lobster', cursive;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 3px 3px 0px #000080;
+    transition: all 0.2s ease-in-out;
+}
+
+.button:hover {
+    background-color: #a50000;
+    box-shadow: 5px 5px 0px #000080;
 }
 
 /* Optional: Add some animation to make it feel more "bouncy" 
@@ -210,7 +246,10 @@ td[colspan="4"] {
     text-align: center;
     position: relative;
     border-bottom: 6px solid #333; /* Bold bottom border for a retro look */
+    position: relative; /* Ensure it’s positioned */
+    z-index: 1000;      /* Bring it to the front */
   }
+  
   
   header h1 {
     font-size: 2rem;
@@ -223,7 +262,7 @@ td[colspan="4"] {
   }
   
   header nav a {
-    color: #FAF1E7;
+    color: #FAF1E7 !important; /* Cream color for links */
     text-decoration: none;
     margin: 0 1rem;
     font-weight: bold;
@@ -285,6 +324,9 @@ td[colspan="4"] {
   tbody tr:nth-child(even) {
     background-color: #f5f5f5;
   }
+
+  
+  
   
   /* Leaderboard medal rows */
   .gold {
@@ -405,6 +447,173 @@ td[colspan="4"] {
     margin-top: 1rem;
   }
   
+/* Login & Register Pages */
+.auth-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #FAF1E7; /* Cream */
+    border: 4px solid #C20E1A; /* Retro red border */
+    border-radius: 8px;
+    box-shadow: 4px 4px 0 #1B2A41; /* Dark blue shadow for depth */
+    text-align: center;
+}
+
+.auth-container h2 {
+    font-family: 'Lobster', cursive;
+    font-size: 2rem;
+    color: #1B2A41; /* Dark Blue */
+    margin-bottom: 10px;
+}
+
+.auth-container label {
+    display: block;
+    text-align: left;
+    font-weight: bold;
+    color: #1B2A41;
+    margin-top: 10px;
+}
+
+.auth-container input {
+    width: 100%;
+    padding: 8px;
+    border: 2px solid #1B2A41;
+    border-radius: 5px;
+    margin-top: 5px;
+    font-size: 1rem;
+}
+
+.auth-container button {
+    background: #C20E1A;
+    color: #FAF1E7;
+    padding: 10px;
+    width: 100%;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-top: 15px;
+    text-transform: uppercase;
+}
+
+.auth-container button:hover {
+    background: #A10C16; /* Slightly darker red */
+}
+
+.auth-container a {
+    color: #1B2A41;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.auth-container a:hover {
+    text-decoration: underline;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 15px;
+}
+
+/* Login & Register Pages */
+.auth-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #FAF1E7; /* Cream */
+    border: 4px solid #C20E1A; /* Retro red border */
+    border-radius: 8px;
+    box-shadow: 4px 4px 0 #1B2A41; /* Dark blue shadow for depth */
+    text-align: center;
+}
+
+.auth-container h2 {
+    font-family: 'Lobster', cursive;
+    font-size: 2rem;
+    color: #1B2A41; /* Dark Blue */
+    margin-bottom: 10px;
+}
+
+.auth-container label {
+    display: block;
+    text-align: left;
+    font-weight: bold;
+    color: #1B2A41;
+    margin-top: 10px;
+}
+
+.auth-container input {
+    width: 100%;
+    padding: 8px;
+    border: 2px solid #1B2A41;
+    border-radius: 5px;
+    margin-top: 5px;
+    font-size: 1rem;
+}
+
+.auth-container button {
+    background: #C20E1A;
+    color: #FAF1E7;
+    padding: 10px;
+    width: 100%;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-top: 15px;
+    text-transform: uppercase;
+}
+
+.auth-container button:hover {
+    background: #A10C16; /* Slightly darker red */
+}
+
+.auth-container a {
+    color: #1B2A41;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.auth-container a:hover {
+    text-decoration: underline;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 15px;
+}
+
+/* Optional Checkered Border */
+.auth-container:before {
+    content: "";
+    display: block;
+    height: 10px;
+    background: repeating-linear-gradient(
+        90deg,
+        #C20E1A 0,
+        #C20E1A 20px,
+        #FAF1E7 20px,
+        #FAF1E7 40px
+    );
+    margin-bottom: 10px;
+}
+
+/* Optional Checkered Border */
+.auth-container:before {
+    content: "";
+    display: block;
+    height: 10px;
+    background: repeating-linear-gradient(
+        90deg,
+        #C20E1A 0,
+        #C20E1A 20px,
+        #FAF1E7 20px,
+        #FAF1E7 40px
+    );
+    margin-bottom: 10px;
+}
+
+
   /* Optional: If you want a retro checkered border somewhere */
   body:before {
     content: "";
@@ -419,3 +628,31 @@ td[colspan="4"] {
     );
   }
   
+button.arrow-btn {
+    background: none; /* Remove the background */
+    width: 25px;
+    height: 25px;
+    border: none;     /* Remove the border */
+    padding: 0;       /* Remove padding */
+    font-size: 1.5rem; /* Adjust the font size of the arrow */
+    cursor: pointer;  /* Show pointer on hover */
+    outline: 2px solid #FFCCCC;
+}
+
+button.arrow-btn:hover {
+    background: none; /* Ensure no background on hover */
+}
+
+button.arrow-btn img {
+  width: 15px;         /* Set the width of the image */
+  height: 15px;        /* Set the height of the image */
+  object-fit: contain; /* Ensure the image scales while maintaining aspect ratio */
+}
+
+button.arrow-btn:focus {
+    outline: none;  /* Remove outline on focus */
+}
+
+a, a:hover, a:visited {
+    color: black;
+}

@@ -18,7 +18,7 @@ from django.urls import path
 from django.shortcuts import redirect
 from django.contrib.auth import logout
 from django.contrib.auth.views import LoginView, LogoutView
-from .views import home, team, matchup, stock_detail, leaderboard, team_view, register
+from .views import home, team, matchup, stock_detail, leaderboard, team_view, register, startsit, minigame
 
 def custom_logout(request):
     logout(request)
@@ -34,5 +34,7 @@ urlpatterns = [
    path('stocks/<str:ticker>/', stock_detail, name='stock_detail'),
    path('logout/', custom_logout, name='logout'),
    path('leaderboard/', leaderboard, name='leaderboard'),
-   path('register/', register, name='register')
+   path('register/', register, name='register'),
+    path('startsit/', startsit, name='startsit'),
+    path('minigame/', minigame, name='minigame'),
 ]

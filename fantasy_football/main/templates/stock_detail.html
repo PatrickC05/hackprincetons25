@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block title %}{{ ticker }} Stock Details{% endblock %}
-  {% block morestyle %}
+{% block morestyle %}
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1/dist/chart.umd.min.js"></script>
   <!-- Moment.js (required for chartjs-adapter-moment) -->
@@ -10,24 +10,42 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
 
   <style>
-    .chart-container {
+    /* Main wrapper for chart + buttons */
+    .chart-wrapper {
       width: 70%;
       margin: 0 auto;
       max-width: 800px;
     }
+
     .chart-container canvas {
       width: 100% !important;
       height: auto !important;
     }
 
+    /* Info container: add margin between lines */
+    .stock-info p {
+      margin-bottom: 8px;
+    }
+    /* Extra space under the h1 */
+    .stock-info h1 {
+      margin-bottom: 16px;
+    }
+
+    .stock-info .summary {
+      margin-bottom: 40px; /* Big gap before the chart */
+    }
+
+    /* Container that holds the buttons + priceChange on top of chart */
+    .range-buttons-container {
+      position: relative;
+      text-align: center; /* center the range buttons */
+      margin-bottom: 10px; 
+    }
+
     /* Button row styling */
     .range-buttons {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 10px;
-      position: relative;
-      z-index: 999;
+      display: inline-block; /* inline so text-align: center works */
+      gap: 10px;             /* you can’t do gap on inline-block in older browsers, but it often works in modern ones */
     }
     .range-buttons button {
       padding: 6px 12px;
@@ -38,15 +56,19 @@
       border-radius: 4px;
       font-weight: 500;
       transition: background-color 0.3s ease, color 0.3s ease;
-  }
+      margin: 0 5px; /* fallback spacing if gap doesn't work */
+    }
     .range-buttons button.active {
       background-color: #444; /* Dark background */
       color: #fff;            /* White text */
-  }
+    }
 
-    /* Price change text */
+    /* Absolutely position the price change to the right of the container */
     #priceChange {
-      text-align: center;
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
       font-weight: bold;
       font-size: 1.1em;
     }
@@ -54,29 +76,45 @@
 {% endblock %}
 {% block content %}
   <!-- Display Stock Info -->
-  <h1>{{ name }} ({{ ticker }})</h1>
-  <p><strong>Sector:</strong> {{ sector }}</p>
-  <p><strong>P/E Ratio:</strong> {{ pe_ratio }}</p>
-  <p><strong>Market Cap:</strong> {{ market_cap }}</p>
-  <p><strong>Summary:</strong> {{ summary }}</p>
-  
-  <!-- Buttons for time ranges (instead of a dropdown) -->
-  <div class="range-buttons">
-    <button data-range="1w" class="active">1W</button>
-    <button data-range="1m">1M</button>
-    <button data-range="3m">3M</button>
-    <button data-range="6m">6M</button>
-    <button data-range="1y">1Y</button>
-    <button data-range="2y">2Y</button>
-    <button data-range="5y">5Y</button>
+  <div class="stock-info">
+    <h1 style="display: inline-flex; align-items: center;">
+      {{ name }} ({{ ticker }})
+      <img 
+        src="{% static 'imgs/logos/' %}{{ ticker }}.png"
+        alt="{{ ticker }} Logo"
+        style="margin-left: 15px; width: 50px; height: auto;"
+      >
+    </h1>
+    
+    <p><strong>Sector:</strong> {{ sector }}</p>
+    <p><strong>P/E Ratio:</strong> {% if pe_ratio %}{{ pe_ratio }}{% else %}-{% endif %}</p>
+    <!-- Wrap market cap in a span so it can be formatted by JavaScript -->
+    <p><strong>Market Cap:</strong>
+      <span id="marketCap" style="visibility: hidden;">{{ market_cap }}</span>
+    </p>
+    <p class="summary"><strong>Summary:</strong> {{ summary }}</p>
   </div>
+  
+  <!-- Chart wrapper that holds everything (buttons + chart) -->
+  <div class="chart-wrapper">
+    <!-- Buttons centered, priceChange on right -->
+    <div class="range-buttons-container">
+      <div class="range-buttons">
+        <button data-range="1w" class="active">1W</button>
+        <button data-range="1m">1M</button>
+        <button data-range="3m">3M</button>
+        <button data-range="6m">6M</button>
+        <button data-range="1y">1Y</button>
+        <button data-range="2y">2Y</button>
+        <button data-range="5y">5Y</button>
+      </div>
+      <span id="priceChange"></span>
+    </div>
 
-  <!-- Paragraph to show how much the stock is up/down over the selected interval -->
-  <p id="priceChange"></p>
-
-  <!-- Chart Container: centered and responsive -->
-  <div class="chart-container">
-    <canvas id="myChart"></canvas>
+    <!-- Chart Container: centered and responsive -->
+    <div class="chart-container">
+      <canvas id="myChart"></canvas>
+    </div>
   </div>
   
   <!-- News Articles Section -->
@@ -96,6 +134,25 @@
   {% endif %}
   
   <script>
+    // Helper function: formats a raw market cap number into $X.XXM/B/T
+    function formatMarketCap(value) {
+      let suffix = '';
+      if (value >= 1e12) {
+        value /= 1e12;
+        suffix = 'T';
+      } else if (value >= 1e9) {
+        value /= 1e9;
+        suffix = 'B';
+      } else if (value >= 1e6) {
+        value /= 1e6;
+        suffix = 'M';
+      } else if (value >= 1e3) {
+        value /= 1e3;
+        suffix = 'K';
+      }
+      return `$${value.toFixed(2)}${suffix}`;
+    }
+
     // Parse the JSON string from Django into a JS object
     const fullData = JSON.parse('{{ chart_data_json|escapejs }}');
     console.log("Full chart data:", fullData);
@@ -132,24 +189,29 @@
     // Update the chart, line color, and price change text
     function updateChart(range) {
       const filtered = filterData(range);
+      const priceChangeEl = document.getElementById('priceChange');
+
       if (filtered.length === 0) {
         chart.data.labels = [];
         chart.data.datasets[0].data = [];
         chart.data.datasets[0].borderColor = '#000';
         chart.update();
-        document.getElementById('priceChange').textContent = "No data for this range.";
+        priceChangeEl.textContent = "No data";
+        priceChangeEl.style.color = 'black';
         return;
       }
 
       const labels = filtered.map(row => row.date);
       const closePrices = filtered.map(row => row.close_price);
 
-      const firstPrice = closePrices[0];
-      const lastPrice = closePrices[closePrices.length - 1];
-      const diff = lastPrice - firstPrice;
-      const diffPct = (diff / firstPrice) * 100;
+      // Use the opening price of the first record and the closing price of the last record
+      const firstOpen = parseFloat(filtered[0].open_price);  // Make sure your dataset has an open_price property
+      const lastClose = parseFloat(filtered[filtered.length - 1].close_price);
+      
+      // Calculate the percentage change based on the ratio of last close to first open
+      const diffPct = ((lastClose / firstOpen) - 1) * 100;
 
-      // Set color based on magnitude of the difference
+      // Set line color based on percentage change
       const lineColor = getGradientColor(diffPct);
 
       // Update chart data
@@ -159,18 +221,18 @@
       chart.update();
 
       // Display the percentage change
-      const priceChangeEl = document.getElementById('priceChange');
-      if (diff > 0) {
-        priceChangeEl.textContent = `Up ${diffPct.toFixed(2)}% over this interval.`;
-        priceChangeEl.style.color = 'green';
-      } else if (diff < 0) {
-        priceChangeEl.textContent = `Down ${Math.abs(diffPct).toFixed(2)}% over this interval.`;
+      if (diffPct > 0) {
+        priceChangeEl.textContent = `Up ${diffPct.toFixed(2)}%`;
+        priceChangeEl.style.color = '#32CD32'; // Lighter green
+      } else if (diffPct < 0) {
+        priceChangeEl.textContent = `Down ${Math.abs(diffPct).toFixed(2)}%`;
         priceChangeEl.style.color = 'red';
       } else {
-        priceChangeEl.textContent = `No change (0.00%) over this interval.`;
+        priceChangeEl.textContent = `No change (0.00%)`;
         priceChangeEl.style.color = 'black';
       }
     }
+
 
     // Highlight the active button
     function setActiveButton(range) {
@@ -185,6 +247,12 @@
     }
 
     window.onload = function() {
+      // Format market cap using JavaScript
+      const marketCapEl = document.getElementById('marketCap');
+      const rawMarketCap = parseFloat(marketCapEl.textContent);
+      marketCapEl.textContent = formatMarketCap(rawMarketCap);
+      marketCapEl.style.visibility = "visible";
+
       // Initialize Chart.js
       const ctx = document.getElementById('myChart').getContext('2d');
       chart = new Chart(ctx, {
@@ -193,9 +261,8 @@
           labels: fullData.map(row => row.date),
           datasets: [
             {
-              label: 'Close Price',
+              label: '', // Legend text removed
               data: fullData.map(row => row.close_price),
-              borderColor: 'rgba(255, 99, 132, 1)', // default
               fill: false,
               tension: 0.1
             }
@@ -204,12 +271,15 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false // Hide the legend entirely
+            }
+          },
           scales: {
             x: {
               type: 'time',
-              time: {
-                unit: 'day'
-              },
+              time: { unit: 'day' },
               title: {
                 display: true,
                 text: 'Date'
@@ -225,7 +295,7 @@
         }
       });
 
-      // Set default range to 1 week
+      // Set default range to 1 month
       updateChart('1w');
       setActiveButton('1w');
 

@@ -23,7 +23,7 @@
                 <td><a href="{% url 'team_view' user_profile.user.id %}">{{ user_profile.team_name }}</a></td>
                 <td>{{ user_profile.win_count }}</td>
                 <td>{{ user_profile.loss_count }}</td>
-                <td>{{ user_profile.total_points }}</td>
+                <td>{{ user_profile.total_points|floatformat:2  }}</td>
             </tr>
         {% endfor %}
     </tbody>
