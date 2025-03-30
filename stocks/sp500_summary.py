@@ -58,7 +58,8 @@ def get_company_domain(wiki_url):
     return None
 
 def get_summary_from_gemini(ticker, name):
-    prompt = f"Give me a summary of {name}(${ticker}), what they do, how they make money, and their future outlook in 3 sentences."
+    prompt = f"Give me a summary of the company {name} (${ticker}), what they do, how they make money, and their future outlook in 3 sentences."
+    print(prompt)
     if GEMINI_API_KEY:
         client = genai.Client(api_key=GEMINI_API_KEY)
 

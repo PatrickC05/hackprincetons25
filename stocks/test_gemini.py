@@ -10,7 +10,7 @@ if GEMINI_API_KEY:
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash", contents="Give me a summary of Agilent Technologies, what they do, how they make money, and their future outlook in 3 sentences."
+            model="gemini-2.0-flash", contents="Give me a summary of the company Textron (TXT), what they do, how they make money, and their future outlook in 3 sentences."
 
         )
         print(response.text)

@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
@@ -9,7 +9,9 @@ import os
 import json
 import pandas as pd
 from django.conf import settings
-
+from django.contrib import messages
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
 from .utils import recent_monday
 
 # Create your views here.
@@ -110,6 +112,12 @@ def matchup(request):
         score = round(stock.get_score(monday), 2)
         stock_scores[stock.ticker] = score
         second_user_score += score
+    
+    for stock in first_user_bench:
+        stock_scores[stock.ticker] = round(stock.get_score(monday), 2) 
+
+    for stock in second_user_bench:
+        stock_scores[stock.ticker] = round(stock.get_score(monday), 2) 
 
     return render(request, 'matchup.html', {'team1name': user_profile.team_name, 
                                             'team1id': user_profile.id,
@@ -186,3 +194,37 @@ def leaderboard(request):
     ).order_by('-win_count', '-total_points')
 
     return render(request, 'leaderboard.html', {'user_profiles': user_profiles})
+
+
+def register(request):
+    if request.method == "POST":
+        username = request.POST["username"]
+        email = request.POST["email"]
+        team_name = request.POST["team_name"]
+        password1 = request.POST["password1"]
+        password2 = request.POST["password2"]
+
+        if password1 != password2:
+            messages.error(request, "Passwords do not match.")
+            return redirect("register")
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already taken.")
+            return redirect("register")
+
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Email already in use.")
+            return redirect("register")
+
+        # Create user and user profile
+        user = User.objects.create_user(username=username, email=email, password=password1)
+        UserProfile.objects.create(user=user, team_name=team_name, email_address=email)
+
+        # Log in the user automatically
+        user = authenticate(username=username, password=password1)
+        if user:
+            login(request, user)
+            messages.success(request, "Account created successfully!")
+            return redirect("home")  # Change "home" to your actual homepage URL name
+
+    return render(request, "register.html")
